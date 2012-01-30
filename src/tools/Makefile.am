@@ -1,0 +1,2 @@
+SUBDIRS = \
+	@TOOL_DIRS@

@@ -1,0 +1,77 @@
+10
+
+dir
+1228
+svn://quake2world.net/quake2world/trunk/src/tools
+svn://quake2world.net
+
+
+
+2012-01-28T19:42:02.511570Z
+1219
+jdolan
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+36511796-b888-4cbc-a84b-ccf9d13b9c79
+
+mapfoo
+dir
+
+capture
+dir
+
+q2wmap
+dir
+
+batch-normalmaps
+dir
+
+Makefile.am
+file
+
+
+
+
+2012-01-30T21:38:08.838470Z
+b87d4e8d6143404798dd6fe1a1efe35a
+2010-10-08T00:31:12.456708Z
+810
+jdolan
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+25
+
+pak
+dir
+
