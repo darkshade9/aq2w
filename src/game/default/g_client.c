@@ -33,6 +33,7 @@ static void G_ClientObituary(g_edict_t *self, g_edict_t *inflictor,
 	g_client_t *killer;
 	int loc;
 	float n;
+
 	ff = means_of_death & MOD_FRIENDLY_FIRE;
 	mod = means_of_death & ~MOD_FRIENDLY_FIRE;
 	message = NULL;

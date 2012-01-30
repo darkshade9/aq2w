@@ -1,0 +1,13 @@
+Toggling fullscreen loses fov
+
+Ctf scoring for assits, defense, etc.
+
+Shell effect via world.cfg
+
+Sound for telefrag
+
+Sound func_plat plat_mid.wav not heard?
+
+Add configurable attack to dynamic lights for misc_emit etc..
+
+Use actual math for ducking smoke flash shift instead of hard-coded hack.

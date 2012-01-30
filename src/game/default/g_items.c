@@ -915,8 +915,9 @@ g_item_t
 
 						/*QUAKED weapon_grenadelauncher(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
-						{ "weapon_grenadelauncher", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FireM4,
+						{ "weapon_grenadelauncher", G_PickupWeapon,
+								G_UseWeapon, G_DropWeapon,
+								G_FireM4,
 								"weapons/common/pickup.wav",
 								"models/weapons/grenadelauncher/tris.obj",
 								EF_ROTATE | EF_BOB | EF_PULSE, "w_glauncher",

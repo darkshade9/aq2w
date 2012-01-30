@@ -253,6 +253,7 @@ extern cvar_t *sv_max_clients;
 extern cvar_t *dedicated;
 
 // end action
+
 extern g_team_t g_team_good, g_team_evil;
 
 // text file logging

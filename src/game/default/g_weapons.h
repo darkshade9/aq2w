@@ -39,6 +39,15 @@ void G_FireHC(g_edict_t *ent);
 void G_FireDualPistol(g_edict_t *ent);
 void G_FireKnife(g_edict_t *ent);
 void G_FirePunch(g_edict_t *ent);
+void G_FirePistol(g_edict_t *ent);
+void G_FireM3(g_edict_t *ent);
+void G_FireMP5(g_edict_t *ent);
+void G_FireHC(g_edict_t *ent);
+void G_FireSniper(g_edict_t *ent);
+void G_FireM4(g_edict_t *ent);
+void G_FireDualPistol(g_edict_t *ent);
+void G_FireKnife(g_edict_t *ent);
+void G_FirePunch(g_edict_t *ent);
 void G_WeaponThink(g_edict_t *ent);
 
 #endif /* __G_LOCAL_H__ */

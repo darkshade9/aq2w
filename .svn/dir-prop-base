@@ -1,0 +1,21 @@
+K 10
+svn:ignore
+V 160
+.externalToolBuilders
+aclocal.m4
+autom4te.cache
+config.*
+configure
+Debug
+depcomp
+gmon.out
+install-sh
+libtool
+ltmain.sh
+m4
+Makefile
+Makefile.in
+missing
+stamp-h1
+
+END
