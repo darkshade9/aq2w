@@ -278,9 +278,9 @@ void G_WeaponThink(g_edict_t *ent) {
 }
 
 /*
- * G_FirePistol
+ * G_FireShotgun
  */
-static void G_FirePistol_(g_edict_t *ent) {
+static void G_FireShotgun_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	G_InitProjectile(ent, forward, right, up, org);
@@ -294,14 +294,14 @@ static void G_FirePistol_(g_edict_t *ent) {
 	gi.Multicast(ent->s.origin, MULTICAST_PVS);
 }
 
-void G_FirePistol(g_edict_t *ent) {
-	G_FireWeapon(ent, 0.65, G_FirePistol_);
+void G_FireShotgun(g_edict_t *ent) {
+	G_FireWeapon(ent, 0.65, G_FireShotgun_);
 }
 
 /*
- * G_FireM3
+ * G_FireSuperShotgun
  */
-static void G_FireM3_(g_edict_t *ent) {
+static void G_FireSuperShotgun_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	ent->s.angles[YAW] -= 5.0;
@@ -327,14 +327,14 @@ static void G_FireM3_(g_edict_t *ent) {
 	gi.Multicast(ent->s.origin, MULTICAST_PVS);
 }
 
-void G_FireM3(g_edict_t *ent) {
-	G_FireWeapon(ent, 0.85, G_FireM3_);
+void G_FireSuperShotgun(g_edict_t *ent) {
+	G_FireWeapon(ent, 0.85, G_FireSuperShotgun_);
 }
 
 /*
- * G_FireMP5
+ * G_FireMachinegun
  */
-static void G_FireMP5_(g_edict_t *ent) {
+static void G_FireMachinegun_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	G_InitProjectile(ent, forward, right, up, org);
@@ -348,14 +348,14 @@ static void G_FireMP5_(g_edict_t *ent) {
 	gi.Multicast(ent->s.origin, MULTICAST_PVS);
 }
 
-void G_FireMP5(g_edict_t *ent) {
-	G_FireWeapon(ent, 0.04, G_FireMP5_);
+void G_FireMachinegun(g_edict_t *ent) {
+	G_FireWeapon(ent, 0.04, G_FireMachinegun_);
 }
 
 /*
- * G_FireM4
+ * G_FireGrenadeLauncher
  */
-static void G_FireM4_(g_edict_t *ent) {
+static void G_FireGrenadeLauncher_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	G_InitProjectile(ent, forward, right, up, org);
@@ -368,14 +368,14 @@ static void G_FireM4_(g_edict_t *ent) {
 	gi.Multicast(ent->s.origin, MULTICAST_PVS);
 }
 
-void G_FireM4(g_edict_t *ent) {
-	G_FireWeapon(ent, 0.6, G_FireM4_);
+void G_FireGrenadeLauncher(g_edict_t *ent) {
+	G_FireWeapon(ent, 0.6, G_FireGrenadeLauncher_);
 }
 
 /*
- * G_FireSniper
+ * G_FireRocketLauncher
  */
-static void G_FireSniper_(g_edict_t *ent) {
+static void G_FireRocketLauncher_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	G_InitProjectile(ent, forward, right, up, org);
@@ -389,14 +389,14 @@ static void G_FireSniper_(g_edict_t *ent) {
 	gi.Multicast(ent->s.origin, MULTICAST_PVS);
 }
 
-void G_FireSniper(g_edict_t *ent) {
-	G_FireWeapon(ent, 0.8, G_FireSniper_);
+void G_FireRocketLauncher(g_edict_t *ent) {
+	G_FireWeapon(ent, 0.8, G_FireRocketLauncher_);
 }
 
 /*
- * G_FireHC
+ * G_FireHyperblaster
  */
-static void G_FireHC_(g_edict_t *ent) {
+static void G_FireHyperblaster_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	G_InitProjectile(ent, forward, right, up, org);
@@ -410,14 +410,14 @@ static void G_FireHC_(g_edict_t *ent) {
 	gi.Multicast(ent->s.origin, MULTICAST_PVS);
 }
 
-void G_FireHC(g_edict_t *ent) {
-	G_FireWeapon(ent, 0.1, G_FireHC_);
+void G_FireHyperblaster(g_edict_t *ent) {
+	G_FireWeapon(ent, 0.1, G_FireHyperblaster_);
 }
 
 /*
- * G_FireDualPistol
+ * G_FireLightning
  */
-static void G_FireDualPistol_(g_edict_t *ent) {
+static void G_FireLightning_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	G_InitProjectile(ent, forward, right, up, org);
@@ -435,14 +435,14 @@ static void G_FireDualPistol_(g_edict_t *ent) {
 	}
 }
 
-void G_FireDualPistol(g_edict_t *ent) {
-	G_FireWeapon(ent, 0.1, G_FireDualPistol_);
+void G_FireLightning(g_edict_t *ent) {
+	G_FireWeapon(ent, 0.1, G_FireLightning_);
 }
 
 /*
- * G_FireKnife
+ * G_FireRailgun
  */
-static void G_FireKnife_(g_edict_t *ent) {
+static void G_FireRailgun_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	G_InitProjectile(ent, forward, right, up, org);
@@ -456,14 +456,14 @@ static void G_FireKnife_(g_edict_t *ent) {
 	gi.Multicast(ent->s.origin, MULTICAST_PVS);
 }
 
-void G_FireKnife(g_edict_t *ent) {
-	G_FireWeapon(ent, 1.5, G_FireKnife_);
+void G_FireRailgun(g_edict_t *ent) {
+	G_FireWeapon(ent, 1.5, G_FireRailgun_);
 }
 
 /*
- * G_FirePunch
+ * G_FireBfg
  */
-static void G_FirePunch_(g_edict_t *ent) {
+static void G_FireBfg_(g_edict_t *ent) {
 	vec3_t forward, right, up, org;
 
 	G_InitProjectile(ent, forward, right, up, org);
@@ -477,6 +477,6 @@ static void G_FirePunch_(g_edict_t *ent) {
 	gi.Multicast(ent->s.origin, MULTICAST_PVS);
 }
 
-void G_FirePunch(g_edict_t *ent) {
-	G_FireWeapon(ent, 2.0, G_FirePunch_);
+void G_FireBfg(g_edict_t *ent) {
+	G_FireWeapon(ent, 2.0, G_FireBfg_);
 }

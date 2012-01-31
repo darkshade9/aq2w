@@ -885,7 +885,7 @@ g_item_t
 						/*QUAKED weapon_shotgun(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
 						{ "weapon_shotgun", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FirePistol,
+								G_DropWeapon, G_FireShotgun,
 								"weapons/common/pickup.wav",
 								"models/weapons/shotgun/tris.obj", EF_ROTATE
 										| EF_BOB | EF_PULSE, "w_shotgun",
@@ -895,7 +895,7 @@ g_item_t
 						/*QUAKED weapon_supershotgun(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
 						{ "weapon_supershotgun", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FireM3,
+								G_DropWeapon, G_FireSuperShotgun,
 								"weapons/common/pickup.wav",
 								"models/weapons/supershotgun/tris.obj",
 								EF_ROTATE | EF_BOB | EF_PULSE, "w_sshotgun",
@@ -905,7 +905,7 @@ g_item_t
 						/*QUAKED weapon_machinegun(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
 						{ "weapon_machinegun", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FireMP5,
+								G_DropWeapon, G_FireMachinegun,
 								"weapons/common/pickup.wav",
 								"models/weapons/machinegun/tris.obj", EF_ROTATE
 										| EF_BOB | EF_PULSE, "w_machinegun",
@@ -917,7 +917,7 @@ g_item_t
 						 */
 						{ "weapon_grenadelauncher", G_PickupWeapon,
 								G_UseWeapon, G_DropWeapon,
-								G_FireM4,
+								G_FireGrenadeLauncher,
 								"weapons/common/pickup.wav",
 								"models/weapons/grenadelauncher/tris.obj",
 								EF_ROTATE | EF_BOB | EF_PULSE, "w_glauncher",
@@ -928,7 +928,7 @@ g_item_t
 						/*QUAKED weapon_rocketlauncher(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
 						{ "weapon_rocketlauncher", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FireSniper,
+								G_DropWeapon, G_FireRocketLauncher,
 								"weapons/common/pickup.wav",
 								"models/weapons/rocketlauncher/tris.md3",
 								EF_ROTATE | EF_BOB | EF_PULSE, "w_rlauncher",
@@ -940,7 +940,7 @@ g_item_t
 						/*QUAKED weapon_hyperblaster(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
 						{ "weapon_hyperblaster", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FireHC,
+								G_DropWeapon, G_FireHyperblaster,
 								"weapons/common/pickup.wav",
 								"models/weapons/hyperblaster/tris.md3",
 								EF_ROTATE | EF_BOB | EF_PULSE,
@@ -951,7 +951,7 @@ g_item_t
 						/*QUAKED weapon_lightning(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
 						{ "weapon_lightning", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FireDualPistol,
+								G_DropWeapon, G_FireLightning,
 								"weapons/common/pickup.wav",
 								"models/weapons/lightning/tris.md3", EF_ROTATE
 										| EF_BOB | EF_PULSE, "w_lightning",
@@ -962,7 +962,7 @@ g_item_t
 						/*QUAKED weapon_railgun(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
 						{ "weapon_railgun", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FireKnife,
+								G_DropWeapon, G_FireRailgun,
 								"weapons/common/pickup.wav",
 								"models/weapons/railgun/tris.obj", EF_ROTATE
 										| EF_BOB | EF_PULSE, "w_railgun",
@@ -972,7 +972,7 @@ g_item_t
 						/*QUAKED weapon_bfg(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
 						{ "weapon_bfg", G_PickupWeapon, G_UseWeapon,
-								G_DropWeapon, G_FirePunch,
+								G_DropWeapon, G_FireBfg,
 								"weapons/common/pickup.wav",
 								"models/weapons/bfg/tris.md3", EF_ROTATE
 										| EF_BOB | EF_PULSE, "w_bfg", "BFG10K",

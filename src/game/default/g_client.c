@@ -31,8 +31,6 @@ static void G_ClientObituary(g_edict_t *self, g_edict_t *inflictor,
 	unsigned int ff, mod;
 	char *message, *message2;
 	g_client_t *killer;
-	int loc;
-	float n;
 
 	ff = means_of_death & MOD_FRIENDLY_FIRE;
 	mod = means_of_death & ~MOD_FRIENDLY_FIRE;
@@ -122,189 +120,62 @@ static void G_ClientObituary(g_edict_t *self, g_edict_t *inflictor,
 
 	self->enemy = attacker;
 	if (attacker && attacker->client) {
-			AddKilledPlayer(attacker, self);
-			switch (mod) {
-			case MOD_MK23:  // zucc
-                        switch (loc) {
-                        case LOC_HDAM:
-                                message = " has a hole in his head from";
-                                message2 = "'s Mark 23 pistol";
-                                break;
-                        case LOC_CDAM:
-                                message = " loses a vital chest organ thanks to";
-                                message2 = "'s Mark 23 pistol";
-                                break;
-                        case LOC_SDAM:
-                                message = " loses his lunch to";
-                                message2 = "'s .45 caliber pistol round";
-                                break;
-                        case LOC_LDAM:
-                                message = " is legless because of";
-                                message2 = "'s .45 caliber pistol round";
-                                break;
-                        default:
-                                message = " was shot by";
-                                message2 = "'s Mark 23 Pistol";
-                        }
-                        break;
-                case MOD_MP5:
-                        switch (loc) {
-                        case LOC_HDAM:
-                                message = "'s brains are on the wall thanks to";
-                                message2 = "'s 10mm MP5/10 round";
-                                break;
-                        case LOC_CDAM:
-                                message = " feels some chest pain via";
-                                message2 = "'s MP5/10 Submachinegun";
-                                break;
-                        case LOC_SDAM:
-                                message = " needs some Pepto Bismol after";
-                                message2 = "'s 10mm MP5 round";
-                                break;
-                        case LOC_LDAM:
-                                message = " had his legs blown off thanks to";
-                                message2 = "'s MP5/10 Submachinegun";
-                                break;
-                        default:
-                                message = " was shot by";
-                                message2 = "'s MP5/10 Submachinegun";
-                        }
-                        break;
-                case MOD_M4:
-                        switch (loc) {
-                        case LOC_HDAM:
-                                message = " had a makeover by";
-                                message2 = "'s M4 Assault Rifle";
-                                break;
-                        case LOC_CDAM:
-                                message = " feels some heart burn thanks to";
-                                message2 = "'s M4 Assault Rifle";
-                                break;
-                        case LOC_SDAM:
-                                message = " has an upset stomach thanks to";
-                                message2 = "'s M4 Assault Rifle";
-                                break;
-                        case LOC_LDAM:
-                                message = " is now shorter thanks to";
-                                message2 = "'s M4 Assault Rifle";
-                                break;
-                        default:
-                                message = " was shot by";
-                                message2 = "'s M4 Assault Rifle";
-                        }
-                        break;
-                case MOD_SNIPER:
-                        switch (loc) {
-                        case LOC_HDAM:
-                                message = " caught a sniper bullet between the eyes from";
-                                break;
-                        case LOC_CDAM:
-                                message = " was picked off by";
-                                break;
-                        case LOC_SDAM:
-                                message = " was sniped in the stomach by";
-                                break;
-                        case LOC_LDAM:
-                                message = " was shot in the legs by";
-                                break;
-                        default:
-                                message = " was sniped by";
-                        }
-                        break;
-                case MOD_DUAL:
-                        switch (loc) {
-                        case LOC_HDAM:
-                                message = " was trepanned by";
-                                message2 = "'s akimbo Mark 23 pistols";
-                                break;
-                        case LOC_CDAM:
-                                message = " was John Woo'd by";
-                                //message2 = "'s .45 caliber pistol round";
-                                break;
-                        case LOC_SDAM:
-                                message = " needs some new kidneys thanks to";
-                                message2 = "'s akimbo Mark 23 pistols";
-                                break;
-                        case LOC_LDAM:
-                                message = " was shot in the legs by";
-                                message2 = "'s akimbo Mark 23 pistols";
-                                break;
-                        default:
-                                message = " was shot by";
-                                message2 = "'s pair of Mark 23 Pistols";
-                        }
-                        break;
-                case MOD_KNIFE:
-                        switch (loc) {
-                        case LOC_HDAM:
-                                message = " had his throat slit by";
-                                break;
-                        case LOC_CDAM:
-                                message = " had open heart surgery, compliments of";
-                                break;
-                        case LOC_SDAM:
-                                message = " was gutted by";
-                                break;
-                        case LOC_LDAM:
-                                message = " was stabbed repeatedly in the legs by";
-                                break;
-                        default:
-                                message = " was slashed apart by";
-                                message2 = "'s Combat Knife";
-                        }
-                        break;
-                case MOD_KNIFE_THROWN:
-                        switch (loc) {
-                                case LOC_HDAM:
-                                message = " caught";
-                                message2 = "'s flying knife with his forehead";
-                                break;
-                        case LOC_CDAM:
-                                message = "'s ribs don't help against";
-                                message2 = "'s flying knife";
-                                break;
-                        case LOC_SDAM:
-                                message = " sees the contents of his own stomach thanks to";
-                                message2 = "'s flying knife";
-                                break;
-                        case LOC_LDAM:
-                                message = " had his legs cut off thanks to";
-                                message2 = "'s flying knife";
-                                break;
-			default:
-                                message = " was hit by";
-                                message2 = "'s flying Combat Knife";
-                        }
+		switch (mod) {
+		case MOD_SHOTGUN:
+			message = "was gunned down by";
+			message2 = "'s pea shooter";
 			break;
-                case MOD_M3:
-                       // switch (mod) {
-                        message = " is full of buckshot from";
-                        message2 = "'s M3 Super 90 Assault Shotgun";
-                        break;
-                case MOD_HC:
-                        message = " ate";
-                        message2 = "'s sawed-off 12 gauge";
-                        break;
-                case MOD_KICK:
-                        message = " had a Bruce Lee put on him by";
-                        message2 = ", with a quickness";
-                        break;
-                case MOD_PUNCH:
-                        message = " caught";
-                        message2 = "'s iron fist";                   
-                        break;
-                case MOD_HANDGRENADE:
-                        message = " caught";
-                        message2 = "'s handgrenade";
-                        break;
-                case MOD_HG_SPLASH:
-                        message = " didn't see";
-                        message2 = "'s handgrenade";
-                        break;
-                case MOD_HELD_GRENADE:
-                        message = " feels";
-                        message2 = "'s pain";
-                        break;
+		case MOD_SUPER_SHOTGUN:
+			message = "was blown away by";
+			message2 = "'s super shotgun";
+			break;
+		case MOD_MACHINEGUN:
+			message = "was chewed up by";
+			break;
+		case MOD_GRENADE:
+			message = "was popped by";
+			message2 = "'s grenade";
+			break;
+		case MOD_GRENADE_SPLASH:
+			message = "was shredded by";
+			message2 = "'s shrapnel";
+			break;
+		case MOD_ROCKET:
+			message = "was dry-anal-powerslammed by";
+			message2 = "'s rocket";
+			break;
+		case MOD_ROCKET_SPLASH:
+			message = "almost dodged";
+			message2 = "'s rocket";
+			break;
+		case MOD_HYPERBLASTER:
+			message = "was melted by";
+			message2 = "'s hyperblaster";
+			break;
+		case MOD_LIGHTNING:
+			message = "was tased by";
+			message2 = "'s lightning";
+			break;
+		case MOD_LIGHTNING_DISCHARGE:
+			message = "sipped";
+			message2 = "'s discharge";
+			break;
+		case MOD_RAILGUN:
+			message = "was poked by";
+			message2 = "'s needledick";
+			break;
+		case MOD_BFG_LASER:
+			message = "saw the pretty lights from";
+			message2 = "'s BFG";
+			break;
+		case MOD_BFG_BLAST:
+			message = "was disintegrated by";
+			message2 = "'s BFG blast";
+			break;
+		case MOD_TELEFRAG:
+			message = "tried to invade";
+			message2 = "'s personal space";
+			break;
 		}
 
 		if (message) {
@@ -780,8 +651,6 @@ static void G_ClientRespawn_(g_edict_t *ent) {
 	g_client_t *cl;
 	g_client_persistent_t locals;
 	int i;
-	//client_respawn_t resp;
-	//client_persistent_t saved;
 
 	// find a spawn point
 	G_SelectSpawnPoint(ent, spawn_origin, spawn_angles);
