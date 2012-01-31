@@ -108,7 +108,7 @@ typedef enum {
 // a synonym for readability
 #define MOVE_TYPE_THINK MOVE_TYPE_NONE
 
-// gitem_t->flags
+// g_item_t->flags
 typedef enum {
 	ITEM_WEAPON, ITEM_AMMO, ITEM_ARMOR, ITEM_FLAG, ITEM_HEALTH, ITEM_POWERUP
 } g_item_type_t;
@@ -308,6 +308,13 @@ typedef struct {
 #define MOD_KICK                        45
 
 #define GIB_ORGANIC			0
+#define CROUCHING_MAXS2			16
+#define DF_NO_FRIENDLY_FIRE		256
+#define DF_SKINTEAMS			64
+#define DF_MODELTEAMS			128
+
+#define MAX_LAST_KILLED			8
+#define MAX_INFO_STRING			512
 //PG BUND
 #define MOD_PUNCH                       50
 #define MOD_GRAPPLE                     51
@@ -316,6 +323,17 @@ extern int meansOfDeath;
 extern int locOfDeath;
 // stop an armor piercing round that hits a vest
 extern int stopAP;
+extern int lights_camera_action;
+extern int holding_on_tie_check;
+extern int team_round_countdown;
+extern int timewarning;
+extern int fragwarning;
+//extern transparent_list_t *transparent_list;
+extern c_trace_t c_trace_t_temp;
+extern int current_round_length; // For RoundTimeLeft
+extern int day_cycle_at;
+extern int teamCount;
+
 
 
 // action function
@@ -359,6 +377,9 @@ void AddSplat (g_edict_t *self, vec3_t point, c_trace_t *tr);
 #define ITF_KEV       0x00000008
 #define ITF_LASER     0x00000010
 #define ITF_HELM      0x00000020
+
+#define EF_GIB	      0x00000002
+
 //AQ2:TNG End adding flags
 
 
@@ -562,8 +583,184 @@ typedef struct {
 	unsigned int match_num; // most recent match
 	unsigned int round_num; // most recent arena round
 	int color; // weapon effect colors
-} g_client_persistent_t;
+} 
 
+g_client_persistent_t;
+
+typedef struct
+{
+  char userinfo[MAX_INFO_STRING];
+  char netname[16];
+  int hand;
+
+  //void connected;           // a loadgame will leave valid entities that
+  // just don't have a connection yet
+
+  // values saved and restored from edicts when changing levels
+  int health;
+  int max_health;
+  //void powerArmorActive;
+
+  int selected_item;
+  int inventory[MAX_ITEMS];
+
+  // ammo capacities
+  int max_bullets;
+  int max_shells;
+  int max_rockets;
+  int max_grenades;
+  int max_cells;
+  int max_slugs;
+
+  g_item_t *weapon;
+  g_item_t *lastweapon;
+
+  int power_cubes;              // used for tracking the cubes in coop games
+
+  int score;                    // for calculating total unit score in coop games
+
+  //FIREBLADE
+  //void spectator;
+  int firing_style;
+  //FIREBLADE
+
+  int num_kills;                //TempFile
+}
+client_persistant_t;
+
+// client data that stays across deathmatch respawns
+typedef struct
+{
+  client_persistant_t coop_respawn;     // what to set client->pers to on a respawn
+
+  int enterframe;               // level.framenum the client entered the game
+
+  int score;                    // frags, etc
+
+  vec3_t cmd_angles;            // angles sent over in the last command
+
+  int game_helpchanged;
+  int helpchanged;
+  int sniper_mode;              //level of zoom
+
+  int kills;                    // real kills
+
+  int deaths;                   // deaths
+
+  int damage_dealt;             // keep track of damage dealt by player to other players
+
+  int streak;                   // kills in a row
+
+  g_item_t *item;                // item for teamplay
+
+  g_item_t *weapon;              // weapon for teamplay
+
+  int team;                     // team the player is on
+  int saved_team;
+  int ctf_state;
+  int ctf_capstreak;
+  float ctf_lasthurtcarrier;
+  float ctf_lastreturnedflag;
+  float ctf_flagsince;
+  float ctf_lastfraggedcarrier;
+
+  int joined_team;              // last frame # at which the player joined a team
+  int lastWave;                 //last time used wave
+
+  // radio/partners stuff...
+  //int radio_delay;
+  //radio_queue_entry_t radio_queue[MAX_RADIO_QUEUE_SIZE];
+  //int radio_queue_size;
+  //edict_t *radio_partner;       // current partner
+  //edict_t *partner_last_offered_to;     // last person I offered a partnership to
+  //edict_t *partner_last_offered_from;   // last person I received a partnership offer from
+  //edict_t *partner_last_denied_from;    // last person I denied a partnership offer from
+  // end of radio/partners stuff...
+
+  int motd_refreshes;
+  int last_motd_refresh;
+  g_edict_t *last_chase_target;   // last person they chased, to resume at the same place later...
+
+  g_edict_t *last_killed_target[MAX_LAST_KILLED];
+  int killed_teammates;
+  int idletime;
+  int tourneynumber;
+  g_edict_t *kickvote;
+  //ignorelist_t ignorelist;
+
+  char *mapvote;                // pointer to map voted on (if any)
+  char *cvote;                  // pointer to config voted on (if any)
+  //void scramblevote;        // want scramble
+
+  int mk23_mode;                // firing mode, semi or auto
+  int mp5_mode;
+  int m4_mode;
+  int knife_mode;
+  int grenade_mode;
+  int id;                       // id command on or off
+  int ir;                       // ir on or off (only matters if player has ir device, currently bandolier)
+
+
+  //void radio_partner_mode;  // 'radio' command using team or partner
+  //void radio_gender;        // radiogender
+  //void radio_power_off;     // radio_power
+
+  int fire_time;
+  int ignore_time;              // framenum when the player called ignore - to prevent spamming
+
+  //void weapon_after_bandage_warned; // to fix message bug when calling weapon while bandaging
+  //void punch_desired;       //controlled in ClientThink
+
+  int hs_streak;                // Headshots in a Row
+
+  int stat_mode;                // Automatical Send of statistics to client
+  int stat_mode_intermission;
+
+  int stats_locations[10];      // All locational damage
+
+  int stats_shots_t;            // Total nr of shots for TNG Stats
+  int stats_shots_h;            // Total nr of hits for TNG Stats
+
+  int stats_shots[100];       // Shots fired
+  int stats_hits[100];                // Shots hit
+  int stats_headshot[100];    // Shots in head
+
+  //AQ2:TNG - Slicer: Video Checking and further Cheat cheking vars
+  char vidref[16];
+  char gldriver[16];
+  float gllockpvs;
+  float glmodulate;
+  float glclear;
+  float gldynamic;
+  //void checked;
+  float checktime[3];
+  int last_damaged_part;
+  char last_damaged_players[256];
+  //AQ2:TNG - Slicer Matchmode code
+  int captain;
+  int subteam;
+  int admin;
+
+  int hc_mode;
+  //SLIC2 redesigning this
+  /*float rd_mute;
+  float rd_when[10];
+  int rd_whensaid;
+  char rd_rep[96];
+  int rd_repcount;
+  float rd_reptime;*/
+  float rd_mute;        //Time to be muted
+  int rd_Count;         //Counter for the last msgs in "xx" secs allowed
+  float rd_time;        //Time for the first radio message of the ones to follow
+
+  int rd_lastRadio;     //Code of the last radio used
+  int rd_repCount;      //Counter for the number of repeated radio msgs
+  float rd_repTime;     //The time for the last repeated radio msg
+
+  //char skin[MAX_SKINLEN];
+}
+
+g_client_respawn_t;
 // this structure is cleared on each respawn
 struct g_client_s {
 	// known to server
@@ -573,7 +770,7 @@ struct g_client_s {
 	// private to game
 
 	g_client_persistent_t persistent;
-
+	g_client_respawn_t resp;
 	boolean_t show_scores; // sets layout bit mask in player state
 	float scores_time; // eligible for scores when time > this
 
@@ -618,11 +815,97 @@ struct g_client_s {
 	g_edict_t *chase_target; // player we are chasing
 
 //action
+  int mk23_max;
+  int mk23_rds;
 
-	vec3_t bleedloc_offset;
+  int dual_max;
+  int dual_rds;
+  int shot_max;
+  int shot_rds;
+  int sniper_max;
+  int sniper_rds;
+
+  int mp5_max;
+  int mp5_rds;
+
+  int m4_max;
+  int m4_rds;
+
+  int cannon_max;
+  int cannon_rds;
+  int knife_max;
+
+  int grenade_max;
+  int curr_weap;                // uses NAME_NUM values
+
+  int fired;                    // keep track of semi auto
+  int burst;                    // remember if player is bursting or not
+  int fast_reload;              // for shotgun/sniper rifle
+  int idle_weapon;              // how many frames to keep our weapon idle
+  int desired_fov;              // what fov does the player want? (via zooming)
+
+  int unique_weapon_total;
+  int unique_item_total;
+  int drop_knife;
+  int knife_sound;              // we attack several times when slashing but only want 1 sound
+
+  int no_sniper_display;
+  int bandaging;
+  int leg_damage;
+  int leg_dam_count;
+  int leg_noise;
+  int leghits;
+  int bleeding;                 //remaining points to bleed away
+  int bleed_remain;
+  int bleedloc;
+  vec3_t bleedloc_offset;       // location of bleeding (from origin)
+  vec3_t bleednorm;
+  float bleeddelay;             // how long until we bleed again
+
+  int bandage_stopped;
+  int have_laser;
+
+  int doortoggle;               // set by player with opendoor command
+
+  g_edict_t *attacker;            // keep track of the last person to hit us
+  int attacker_mod;             // and how they hit us
+  int attacker_loc;             // location of the hit
+
+  int push_timeout;             // timeout for how long an attacker will get fall death credit
+
+  int jumping;
+
+  int reload_attempts;
+  int weapon_attempts;
+  int desired_zoom;             //either 0, 1, 2, 4 or 6. This is set to 0 if no zooming shall be done, and is set to 0 after zooming is done.
+
+  int ctf_uvtime;               // AQ2:TNG - JBravo adding UVtime
+
+#define DAMAGE_RADIUS                   0x00000001      // damage was indirect
+#define DAMAGE_NO_ARMOR                 0x00000002      // armour does not protect from this damage
+#define DAMAGE_ENERGY                   0x00000004      // damage is from an energy based weapon
+#define DAMAGE_NO_KNOCKBACK             0x00000008      // do not affect velocity, just view angles
+#define DAMAGE_BULLET                   0x00000010      // damage is from a bullet (used for ricochets)
+#define DAMAGE_NO_PROTECTION            0x00000020      // armor, shields, invulnerability, and godmode have no effect
+
+#define DEFAULT_BULLET_HSPREAD                  300
+#define DEFAULT_BULLET_VSPREAD                  500
+#define DEFAULT_SHOTGUN_HSPREAD                 1000
+#define DEFAULT_SHOTGUN_VSPREAD                 500
+#define DEFAULT_DEATHMATCH_SHOTGUN_COUNT        12
+#define DEFAULT_SHOTGUN_COUNT                   12
+#define DEFAULT_SSHOTGUN_COUNT                  20
+
+//void ThrowHead (edict_t *self, char *gibname, int damage, int type);
+//void ThrowClientHead (edict_t *self, int damage);
+//void ThrowGib (edict_t *self, char *gibname, int damage, int type);
+//void BecomeExplosion1 (edict_t *self);
+
+
+
 };
 
-//typedef client_respawn_t;
+//g_client_respawn_t;
 
 // this structure is cleared on each PutClientInServer(),
 // except for 'client->pers'
@@ -725,70 +1008,6 @@ struct gclient_s
   // zucc
   // weapon ammo information
 
-  int mk23_max;
-  int mk23_rds;
-
-  int dual_max;
-  int dual_rds;
-  int shot_max;
-  int shot_rds;
-  int sniper_max;
-  int sniper_rds;
-
-  int mp5_max;
-  int mp5_rds;
-
-  int m4_max;
-  int m4_rds;
-
-  int cannon_max;
-  int cannon_rds;
-  int knife_max;
-
-  int grenade_max;
-  int curr_weap;                // uses NAME_NUM values
-
-  int fired;                    // keep track of semi auto
-  int burst;                    // remember if player is bursting or not
-  int fast_reload;              // for shotgun/sniper rifle
-  int idle_weapon;              // how many frames to keep our weapon idle
-  int desired_fov;              // what fov does the player want? (via zooming)
-
-  int unique_weapon_total;
-  int unique_item_total;
-  int drop_knife;
-  int knife_sound;              // we attack several times when slashing but only want 1 sound
-
-
-  int no_sniper_display;
-  int bandaging;
-  int leg_damage;
-  int leg_dam_count;
-  int leg_noise;
-  int leghits;
-  int bleeding;                 //remaining points to bleed away
-  int bleed_remain;
-  int bleedloc;
-  vec3_t bleedloc_offset;       // location of bleeding (from origin)
-  vec3_t bleednorm;
-  float bleeddelay;             // how long until we bleed again
-
-  int bandage_stopped;
-  int have_laser;
-
-  int doortoggle;               // set by player with opendoor command
-
-  g_edict_t *attacker;            // keep track of the last person to hit us
-  int attacker_mod;             // and how they hit us
-  int attacker_loc;             // location of the hit
-
-  int push_timeout;             // timeout for how long an attacker will get fall death credit
-
-  int jumping;
-
-  int reload_attempts;
-  int weapon_attempts;
-
   //qboolean inmenu;              // in menu
 //pmenuhnd_t *menu;             // current menu
 
@@ -810,10 +1029,6 @@ struct gclient_s
   // IP address of this host to be collected at Connection time.
   // (getting at it later seems to be unreliable)
   char ipaddr[100];             // changed to 100  -FB
-
-  int desired_zoom;             //either 0, 1, 2, 4 or 6. This is set to 0 if no zooming shall be done, and is set to 0 after zooming is done.
-
-  int ctf_uvtime;               // AQ2:TNG - JBravo adding UVtime
 
   void *ctf_grapple;            // entity of grapple
   int ctf_grapplestate;         // true if pulling

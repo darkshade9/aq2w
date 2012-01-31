@@ -268,3 +268,4 @@ g_export_t *G_LoadGame(g_import_t *import);
 #endif /* __G_LOCAL_H__ */
 
 #endif /* __G_MAIN_H__ */
+

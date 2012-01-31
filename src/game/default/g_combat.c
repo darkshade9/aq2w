@@ -371,10 +371,10 @@ void G_RadiusDamage(g_edict_t *inflictor, g_edict_t *attacker,
 
 //Action
 
-qboolean CheckTeamDamage (g_edict_t *targ, g_edict_t *attacker);
-{        
-return false;
-}
+//void CheckTeamDamage (g_edict_t *targ, g_edict_t *attacker);
+//{        
+//return false;
+//}
 
 void BloodSprayThink (g_edict_t * self)
 {
@@ -398,30 +398,30 @@ void BloodSprayThink (g_edict_t * self)
      self->think = G_FreeEdict;
      }
 
-     self->nextthink = level.time + 0.1;
+     self->next_think = level.time + 0.1;
      gi.linkentity (self);
    */
 
   G_FreeEdict (self);
 }
-void blood_spray_touch (g_edict_t * ent, g_edict_t * other, c_bsp_plane_t * plane,
-                   c_bsp_surface_t * surf)
+void blood_spray_touch (g_edict_t *ent, g_edict_t *other, c_bsp_plane_t *plane,
+                   c_bsp_surface_t *surf)
 {
         if (other == ent->owner)
                 return;
         ent->think = G_FreeEdict;
-        ent->nextthink = level.time + 0.1;
+        ent->next_think = level.time + 0.1;
 }
-void blood_spray_touch (g_edict_t * ent, g_edict_t * other, c_bsp_plane_t * plane,
-                   c_bsp_surface_t * surf)
+void blood_spray_touch (g_edict_t *ent, g_edict_t *other, c_bsp_plane_t *plane,
+                   c_bsp_surface_t *surf)
 {
         if (other == ent->owner)
                 return;
         ent->think = G_FreeEdict;
-        ent->nextthink = level.time + 0.1;
+        ent->next_think = level.time + 0.1;
 }
 
-void spray_blood (g_edict_t * self, vec3_t start, vec3_t dir, int damage, int mod)
+void spray_blood (g_edict_t *self, vec3_t start, vec3_t dir, int damage, int mod)
 {
         g_edict_t *blood;
         int speed;
@@ -454,18 +454,18 @@ void spray_blood (g_edict_t * self, vec3_t start, vec3_t dir, int damage, int mo
         blood = G_Spawn ();
         VectorNormalize (dir);
         VectorCopy (start, blood->s.origin);
-        VectorCopy (dir, blood->movedir);
-        vectoangles (dir, blood->s.angles);
+        VectorCopy (dir, blood->move_dir);
+        AngleVectors (dir, blood->s.angles);
         VectorScale (dir, speed, blood->velocity);
-        blood->movetype = MOVE_TYPE_BLOOD;
-        blood->clipmask = MASK_SHOT;
-        blood->solid = SOLID_BBOX;
+        blood->move_type = MOVE_TYPE_BLOOD;
+        blood->clip_mask = MASK_SHOT;
+        //blood->solid = SOLID_BBOX;
         blood->s.effects |= EF_GIB;
         VectorClear (blood->mins);
         VectorClear (blood->maxs);
         blood->s.modelindex = gi.modelindex ("sprites/null.sp2");
         blood->owner = self;
-        blood->nextthink = level.time + speed / 1000;   //3.2;
+        blood->next_think = level.time + speed / 1000;   //3.2;
         blood->touch = blood_spray_touch;
         blood->think = BloodSprayThink;
         blood->dmg = damage;
@@ -563,7 +563,7 @@ void VerifyHeadShot (vec3_t point, vec3_t dir, float height, vec3_t newpoint)
 #define CHEST_DAMAGE (height/1.4) - abs(targ->mins[2])
 
 #define HEAD_HEIGHT 12.0
-qboolean IsFemale (g_edict_t * ent);
+//qboolean IsFemale (g_edict_t * ent);
 
 
 void
@@ -571,10 +571,12 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
           vec3_t point, vec3_t normal, int damage, int knockback, int dflags,
           int mod)
 {
-        gclient_t *client;
+        g_client_t *client;
         char buf[256];
-        int take, save;
-        int asave, psave;
+        int take;
+	int save;
+        int asave;
+	int psave;
         int te_sparks, do_sparks = 0;
         int damage_type = 0;            // used for MOD later
         int bleeding = 0;               // damage causes bleeding
@@ -587,7 +589,7 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
         float targ_maxs2;               //FB 6/1/99
 
         // do this before teamplay check
-        if (!targ->takedamage)
+        if (!targ->take_damage)
                 return;
         //FIREBLADE
         if (teamplay->value && mod != MOD_TELEFRAG)
@@ -650,7 +652,7 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                         // TNG Stats - Add +1 to hit, make sure that hc and m3 are handles differently
 
                         if ((attacker->client) && (mod != MOD_M3) && (mod != MOD_HC)) {
-                                strcpy(attacker->client->resp.last_damaged_players, targ->client->persistent.netname);
+                                strcpy(attacker->client->resp.last_damaged_players, targ->client->persistent.net_name);
 
                                 if (!teamplay->value || team_round_going || stats_afterround->value) {
                                         attacker->client->resp.stats_hits[mod]++;
@@ -722,10 +724,11 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                                                 {
                                                         if (use_rewards->value)
                                                         {
-                                                                sprintf (buf, "ACCURACY %s!", attacker->client->persistent.netname);
+                                                                sprintf (buf, "ACCURACY %s!", attacker->client->persistent.net_name);
                                                                 CenterPrintAll (buf);
-                                                                gi.sound (&g_edicts[0], CHAN_VOICE | CHAN_NO_PHS_ADD,
-                                                                        gi.soundindex ("tng/accuracy.wav"), 1.0, ATTN_NONE, 0.0);
+								gi.Sound(other, gi.SoundIndex("tng/accuracy.wav"), ATTN_NONE);
+                                                                //gi.Sound(ent, gi.SoundIndex("tng/accuracy.wav"), ATTN_NORM);
+								//gi.SoundIndex ("tng/accuracy.wav"), 1.0, ATTN_NONE, 0.0);
                                                         }
                                                         attacker->client->resp.hs_streak = 0;
                                                 }
@@ -737,13 +740,13 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                                         {
                                                 if (attacker->client)
                                                 {
-                                                        gi.cprintf (attacker, PRINT_HIGH, "%s has a Kevlar Helmet - AIM FOR THE BODY!\n",
-                                                                targ->client->persistent.netname);
-                                                        gi.cprintf (targ, PRINT_HIGH, "Kevlar Helmet absorbed a part of %s's shot\n",
-                                                                attacker->client->persistent.netname);
+                                                        gi.snprintf(attacker, PRINT_HIGH, "%s has a Kevlar Helmet - AIM FOR THE BODY!\n",
+                                                                targ->client->persistent.net_name);
+                                                        gi.snprintf(targ, PRINT_HIGH, "Kevlar Helmet absorbed a part of %s's shot\n",
+                                                                attacker->client->persistent.net_name);
                                                 }
-                                                gi.sound (targ, CHAN_ITEM, gi.soundindex("misc/vest.wav"), 1,
-                                                        ATTN_NORM, 0);
+						gi.Sound(other, gi.SoundIndex("misc/vest.wav"), ATTN_NONE);
+                                                //gi.Sound (targ, CHAN_ITEM, gi.SoundIndex("misc/vest.wav"), 1, ATTN_NORM, 0);
                                                 damage = (int) (damage / 2);
                                                 damage_type = LOC_HDAM;
                                                 bleeding = 0;
@@ -755,42 +758,42 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                                         {
                                                 if (attacker->client)
                                                 {
-                                                        gi.cprintf (attacker, PRINT_HIGH,
+                                                        gi.snprintf(attacker, PRINT_HIGH,
                                                         "%s has a Kevlar Helmet, too bad you have AP rounds...\n",
-                                                        targ->client->persistent.netname);
-                                                        gi.cprintf (targ, PRINT_HIGH,
+                                                        targ->client->persistent.net_name);
+                                                        gi.snprintf(targ, PRINT_HIGH,
                                                         "Kevlar Helmet absorbed some of %s's AP sniper round\n",
-                                                        attacker->client->persistent.netname);
+                                                        attacker->client->persistent.net_name);
                                                 }
                                                 damage = (int) (damage * 0.325);
-                                                gi.sound (targ, CHAN_VOICE, gi.soundindex("misc/headshot.wav"), 1,
-                                                        ATTN_NORM, 0);
+						gi.Sound(other, gi.SoundIndex("misc/headshot.wav"), ATTN_NONE);
+                                                //gi.Sound (targ, CHAN_VOICE, gi.SoundIndex("misc/headshot.wav"), 1, ATTN_NORM, 0);
                                                 damage_type = LOC_HDAM;
                                         }
                                         else
                                         {
                                                 damage = damage * 1.8 + 1;
-                                                gi.cprintf (targ, PRINT_HIGH, "Head damage\n");
+                                                gi.snprintf(targ, PRINT_HIGH, "Head damage\n");
                                                 if (attacker->client)
-                                                        gi.cprintf (attacker, PRINT_HIGH, "You hit %s in the head\n",
-                                                                targ->client->persistent.netname);
+                                                        gi.snprintf(attacker, PRINT_HIGH, "You hit %s in the head\n",
+                                                                targ->client->persistent.net_name);
                                                 damage_type = LOC_HDAM;
                                                 if (mod != MOD_KNIFE && mod != MOD_KNIFE_THROWN)
-                                                        gi.sound (targ, CHAN_VOICE, gi.soundindex ("misc/headshot.wav"), 1,
-                                                                ATTN_NORM, 0);
+                                                gi.Sound(other, gi.SoundIndex("misc/headshot.wav"), ATTN_NONE);        
+						//gi.Sound (targ, CHAN_VOICE, gi.SoundIndex ("misc/headshot.wav"), 1, ATTN_NORM, 0);
                                         //else
-                                        //      gi.sound(targ, CHAN_VOICE, gi.soundindex("misc/glurp.wav"), 1, ATTN_NORM, 0);
+                                        //      gi.Sound(targ, CHAN_VOICE, gi.SoundIndex("misc/glurp.wav"), 1, ATTN_NORM, 0);
                                         }
                                 }
                                 else if (z_rel < LEG_DAMAGE)
                                 {
                                         damage = damage * .25;
-                                        gi.cprintf (targ, PRINT_HIGH, "Leg damage\n");
+                                        gi.snprintf(targ, PRINT_HIGH, "Leg damage\n");
                                         if (attacker->client)
                                         {
                                                 attacker->client->resp.hs_streak = 0;
-                                                gi.cprintf (attacker, PRINT_HIGH, "You hit %s in the legs\n",
-                                                        targ->client->persistent.netname);
+                                                gi.snprintf(attacker, PRINT_HIGH, "You hit %s in the legs\n",
+                                                        targ->client->persistent.net_name);
                                         }
                                         damage_type = LOC_LDAM;
                                         targ->client->leg_damage = 1;
@@ -804,17 +807,17 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                                 else if (z_rel < STOMACH_DAMAGE)
                                 {
                                         damage = damage * .4;
-                                        gi.cprintf (targ, PRINT_HIGH, "Stomach damage\n");
+                                        gi.snprintf(targ, PRINT_HIGH, "Stomach damage\n");
                                         if (attacker->client)
                                         {
                                                 attacker->client->resp.hs_streak = 0;
-                                                gi.cprintf (attacker, PRINT_HIGH, "You hit %s in the stomach\n",
-                                                        targ->client->persistent.netname);
+                                                gi.snprintf(attacker, PRINT_HIGH, "You hit %s in the stomach\n",
+                                                        targ->client->persistent.net_name);
                                         }
                                         damage_type = LOC_SDAM;
                                         //TempFile bloody gibbing
                                         if (mod == MOD_SNIPER && sv_gib->value)
-                                                ThrowGib (targ, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
+                                                //ThrowGib (targ, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
                                         //AQ2:TNG Slicer Last Damage Location
                                         attacker->client->resp.last_damaged_part = LOC_SDAM;
                                         //AQ2:TNG END
@@ -833,19 +836,19 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                                         {
                                                 if (attacker->client)
                                                 {
-                                                        gi.cprintf (attacker, PRINT_HIGH, "%s has a Kevlar Vest - AIM FOR THE HEAD!\n",
-                                                                targ->client->persistent.netname);
-                                                        gi.cprintf (targ, PRINT_HIGH, "Kevlar Vest absorbed most of %s's shot\n",
-                                                                attacker->client->persistent.netname);
+                                                        gi.snprintf(attacker, PRINT_HIGH, "%s has a Kevlar Vest - AIM FOR THE HEAD!\n",
+                                                                targ->client->persistent.net_name);
+                                                        gi.snprintf(targ, PRINT_HIGH, "Kevlar Vest absorbed most of %s's shot\n",
+                                                                attacker->client->persistent.net_name);
                                                         /*
                                                         if (IsFemale(targ))
-                                                        gi.cprintf(attacker, PRINT_HIGH, "You bruised %s through her Kevlar Vest\n", targ->cli$
+                                                        gi.snprintf(attacker, PRINT_HIGH, "You bruised %s through her Kevlar Vest\n", targ->cli$
                                                         else
-                                                        gi.cprintf(attacker, PRINT_HIGH, "You bruised %s through his Kevlar Vest\n", targ->cli$
+                                                        gi.snprintf(attacker, PRINT_HIGH, "You bruised %s through his Kevlar Vest\n", targ->cli$
                                                         */
                                                 }
-                                                gi.sound (targ, CHAN_ITEM, gi.soundindex ("misc/vest.wav"), 1,
-                                                        ATTN_NORM, 0);
+                                                gi.Sound(other, gi.SoundIndex("misc/vest.wav"), ATTN_NONE);
+						//gi.Sound (targ, CHAN_ITEM, gi.SoundIndex ("misc/vest.wav"), 1, ATTN_NORM, 0);
                                                 damage = (int) (damage / 10);
                                                 damage_type = LOC_CDAM;
                                                 bleeding = 0;
@@ -858,10 +861,10 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                                         {
                                                 if (attacker->client)
                                                 {
-                                                        gi.cprintf (attacker, PRINT_HIGH, "%s has a Kevlar Vest, too bad you have AP rounds...\n",
-                                                                targ->client->persistent.netname);
-                                                        gi.cprintf (targ, PRINT_HIGH, "Kevlar Vest absorbed some of %s's AP sniper round\n",
-                                                                attacker->client->persistent.netname);
+                                                        gi.snprintf (attacker, PRINT_HIGH, "%s has a Kevlar Vest, too bad you have AP rounds...\n",
+                                                                targ->client->persistent.net_name);
+                                                        gi.snprintf (targ, PRINT_HIGH, "Kevlar Vest absorbed some of %s's AP sniper round\n",
+                                                                attacker->client->persistent.net_name);
                                                 }
                                                 damage = damage * .325;
                                                 damage_type = LOC_CDAM;
@@ -869,14 +872,14 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                                         else
                                         {
                                                 damage = damage * .65;
-                                                gi.cprintf (targ, PRINT_HIGH, "Chest damage\n");
+                                                gi.snprintf (targ, PRINT_HIGH, "Chest damage\n");
                                                 if (attacker->client)
-                                                        gi.cprintf (attacker, PRINT_HIGH, "You hit %s in the chest\n",
-                                                                targ->client->persistent.netname);
+                                                        gi.snprintf (attacker, PRINT_HIGH, "You hit %s in the chest\n",
+                                                                targ->client->persistent.net_name);
                                                 damage_type = LOC_CDAM;
                                                 //TempFile bloody gibbing
                                                 if (mod == MOD_SNIPER && sv_gib->value)
-                                                        ThrowGib (targ, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
+                                                        //ThrowGib (targ, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
                                         }
                                         //AQ2:TNG Slicer Last Damage Location
                                         if (INV_AMMO(targ, KEV_NUM) && mod != MOD_KNIFE && mod != MOD_KNIFE_THROWN) {
@@ -895,11 +898,12 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
                  {
 
                  // no mod to damage
-                 gi.cprintf(targ, PRINT_HIGH, "Head damage\n");
+                 gi.snprintf(targ, PRINT_HIGH, "Head damage\n");
                  if (attacker->client)
-                 gi.cprintf(attacker, PRINT_HIGH, "You hit %s in the head\n", targ->client->persistent.netname);
+                 gi.snprintf(attacker, PRINT_HIGH, "You hit %s in the head\n", targ->client->persistent.net_name);
                  damage_type = LOC_HDAM;
-                 gi.sound(targ, CHAN_VOICE, gi.soundindex("misc/headshot.wav"), 1, ATTN_NORM, 0);
+                 gi.Sound(other, gi.SoundIndex("misc/headshot.wav"), ATTN_NONE); 
+		 //gi.Sound(targ, CHAN_VOICE, gi.SoundIndex("misc/headshot.wav"), 1, ATTN_NORM, 0);
                  } */
                         }
                         if (team_round_going && attacker->client && targ != attacker
@@ -929,7 +933,7 @@ T_Damage (g_edict_t * targ, g_edict_t * inflictor, g_edict_t * attacker, vec3_t 
         {
                 if (targ->client && targ->health > 0)
                 {
-                        gi.cprintf (targ, PRINT_HIGH, "Leg damage\n");
+                        gi.snprintf (targ, PRINT_HIGH, "Leg damage\n");
                         targ->client->leg_damage = 1;
                         targ->client->leghits++;
                 //      bleeding = 1; for testing
