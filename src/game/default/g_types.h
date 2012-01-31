@@ -291,6 +291,13 @@ typedef struct {
 #define MAX_MAP_LIST_ELTS 64
 #define MAP_LIST_WEIGHT 16384
 
+//Action Additions
+#define ACTION_VERSION  "TNG " VERSION
+#define TNG_VERSION             "AQ2W: The Next Generation"
+#define TNG_VERSION2    "AQ2W: The Next Generation " VERSION
+#define MAX_LAST_KILLED				8
+
+
 // voting
 #define MAX_VOTE_TIME 60.0
 #define VOTE_MAJORITY 0.51
@@ -313,6 +320,25 @@ typedef enum {
 #define DAMAGE_BULLET			0x00000008  // damage is from a bullet (used for ricochets)
 #define DAMAGE_NO_PROTECTION	0x00000010  // armor and godmode have no effect
 #define MAX_NET_NAME 64
+
+//=== player ignoring ======================================================
+//==========================================================================
+
+#define IGNOREMENUTITLE "Ignoremenu"
+#define PG_MAXPLAYERS 11
+
+typedef g_edict_t *ignorelist_t[PG_MAXPLAYERS];
+
+void Cmd_Ignoreclear_f (g_edict_t *self, char *s);
+void Cmd_Ignorelist_f (g_edict_t *self, char *s);
+void Cmd_Ignorenum_f (g_edict_t *self, char *s);
+void Cmd_Ignore_f (g_edict_t *self, char *s);
+void Cmd_IgnorePart_f (g_edict_t *self, char *s);
+void _ClrIgnoresOn (g_edict_t *target);
+int IsInIgnoreList (g_edict_t *source, g_edict_t *subject);
+//void _IgnoreVoteSelected (g_edict_t *ent, pmenu_t *p);
+void _ClearIgnoreList (g_edict_t *ent);
+//==========================================================================
 
 // teams
 typedef struct {
@@ -403,7 +429,7 @@ struct g_client_s {
 	float respawn_time; // eligible for respawn when time > this
 	float drown_time; // eligible for drowning damage when time > this
 	float sizzle_time; // eligible for sizzle damage when time > this
-	float fall_time; // eligible for landing event when time > this
+	float fall_time, fall_value; // eligible for landing event when time > this
 	float jump_time; // eligible for jump when time > this
 	float pain_time; // eligible for pain sound when time > this
 	float gasp_time; // eligible for gasp sound when time > this
@@ -418,6 +444,90 @@ struct g_client_s {
 	float quad_attack_time; // play attack sound when time > this
 
 	g_edict_t *chase_target; // player we are chasing
+
+//Action additions
+
+	int kills;
+	int deaths;
+	int streak;	
+	g_item_t *item;		//tp item
+	g_item_t *weapon;	//tp weapon
+	g_item_t *lastweapon;
+
+	int team;		//tp team
+	int saved_team;
+  	int ctf_state;
+	int ctf_capstreak;
+	float ctf_lasthurtcarrier;
+	float ctf_lastreturnedflag;
+	float ctf_flagsince;
+	float ctf_lastfraggedcarrier;
+
+	int joined_team;              // last frame # at which the player joined a team
+	int lastWave;                 //last time used wave
+
+	g_edict_t *last_killed_target[MAX_LAST_KILLED];
+	int killed_teammates;
+	int idletime;
+	int tourneynumber;
+	g_edict_t *kickvote;
+	ignorelist_t ignorelist;
+
+	char *mapvote;
+	char *cvote;
+
+	int mk23_mode;                // firing mode, semi or auto
+	int mp5_mode;
+	int m4_mode;
+	int knife_mode;
+	int grenade_mode;
+	int hc_mode;
+	int id;                       // id command on or off
+	int ir;                       // ir on or off (only matters if player has ir device, currently bandolier)
+	int hs_streak; 
+	int firing_style;
+
+	int stats_locations[10];      // All locational damage
+
+	int stats_shots_t;            // Total nr of shots for TNG Stats
+	int stats_shots_h;            // Total nr of hits for TNG Stats
+
+	int stats_shots[100];       // Shots fired
+	int stats_hits[100];                // Shots hit
+	int stats_headshot[100];    // Shots in head
+
+	int hand;
+	int score;	
+
+	int selected_item;
+	int inventory[MAX_ITEMS];
+
+	int max_pistol_bullets;
+	int max_shells;
+	int max_grenades;
+	int max_sniper_rounds;
+	int max_mp5;
+	int max_m4;
+	
+	vec3_t kick_angles;
+	vec3_t kick_origin;
+	float v_dmg_roll, v_dmg_pitch, v_dmg_time;
+	float damage_alpha;
+	float bonus_alpha;
+	vec3_t v_angle;
+	vec3_t damage_blend;
+	vec3_t oldviewangles;
+	vec3_t oldvelocity;
+	
+	
+  //AQ2:TNG - Slicer Matchmode code
+	int captain;
+	int subteam;
+	int admin;
+
+	float rd_mute;
+	int rd_Count;
+	float rd_time;
 };
 
 struct g_edict_s {

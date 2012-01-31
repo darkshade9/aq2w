@@ -1,0 +1,148 @@
+game_la-g_weapons.lo: g_weapons.c g_local.h ../../shared.h \
+ ../../quake2world.h ../../../config.h /usr/include/ctype.h \
+ /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h /usr/include/bits/types.h \
+ /usr/include/bits/typesizes.h /usr/include/endian.h \
+ /usr/include/bits/endian.h /usr/include/math.h \
+ /usr/include/bits/huge_val.h /usr/include/bits/huge_valf.h \
+ /usr/include/bits/huge_vall.h /usr/include/bits/inf.h \
+ /usr/include/bits/nan.h /usr/include/bits/mathdef.h \
+ /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.6/include/stdarg.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.4.6/include/stddef.h \
+ /usr/include/stdio.h /usr/include/libio.h /usr/include/_G_config.h \
+ /usr/include/wchar.h /usr/include/bits/stdio_lim.h \
+ /usr/include/bits/sys_errlist.h /usr/include/bits/stdio.h \
+ /usr/include/stdlib.h /usr/include/stdint.h /usr/include/bits/wchar.h \
+ /usr/include/string.h /usr/include/bits/string.h \
+ /usr/include/bits/string2.h /usr/include/strings.h /usr/include/time.h \
+ /usr/include/bits/time.h ../../game/game.h g_types.h ../../quake2world.h \
+ g_ballistics.h g_chase.h g_client.h g_combat.h g_commands.h g_entity.h \
+ g_entity_func.h g_entity_info.h g_entity_misc.h g_entity_target.h \
+ g_entity_trigger.h g_items.h g_main.h g_physics.h g_stats.h g_utils.h \
+ g_view.h g_weapons.h
+
+g_local.h:
+
+../../shared.h:
+
+../../quake2world.h:
+
+../../../config.h:
+
+/usr/include/ctype.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
+
+/usr/include/bits/types.h:
+
+/usr/include/bits/typesizes.h:
+
+/usr/include/endian.h:
+
+/usr/include/bits/endian.h:
+
+/usr/include/math.h:
+
+/usr/include/bits/huge_val.h:
+
+/usr/include/bits/huge_valf.h:
+
+/usr/include/bits/huge_vall.h:
+
+/usr/include/bits/inf.h:
+
+/usr/include/bits/nan.h:
+
+/usr/include/bits/mathdef.h:
+
+/usr/include/bits/mathcalls.h:
+
+/usr/include/bits/mathinline.h:
+
+/usr/lib/gcc/x86_64-redhat-linux/4.4.6/include/stdarg.h:
+
+/usr/lib/gcc/x86_64-redhat-linux/4.4.6/include/stddef.h:
+
+/usr/include/stdio.h:
+
+/usr/include/libio.h:
+
+/usr/include/_G_config.h:
+
+/usr/include/wchar.h:
+
+/usr/include/bits/stdio_lim.h:
+
+/usr/include/bits/sys_errlist.h:
+
+/usr/include/bits/stdio.h:
+
+/usr/include/stdlib.h:
+
+/usr/include/stdint.h:
+
+/usr/include/bits/wchar.h:
+
+/usr/include/string.h:
+
+/usr/include/bits/string.h:
+
+/usr/include/bits/string2.h:
+
+/usr/include/strings.h:
+
+/usr/include/time.h:
+
+/usr/include/bits/time.h:
+
+../../game/game.h:
+
+g_types.h:
+
+../../quake2world.h:
+
+g_ballistics.h:
+
+g_chase.h:
+
+g_client.h:
+
+g_combat.h:
+
+g_commands.h:
+
+g_entity.h:
+
+g_entity_func.h:
+
+g_entity_info.h:
+
+g_entity_misc.h:
+
+g_entity_target.h:
+
+g_entity_trigger.h:
+
+g_items.h:
+
+g_main.h:
+
+g_physics.h:
+
+g_stats.h:
+
+g_utils.h:
+
+g_view.h:
+
+g_weapons.h:
