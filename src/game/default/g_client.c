@@ -780,6 +780,8 @@ static void G_ClientRespawn_(g_edict_t *ent) {
 	g_client_t *cl;
 	g_client_persistent_t locals;
 	int i;
+	//client_respawn_t resp;
+	//client_persistent_t saved;
 
 	// find a spawn point
 	G_SelectSpawnPoint(ent, spawn_origin, spawn_angles);

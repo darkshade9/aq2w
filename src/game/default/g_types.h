@@ -101,6 +101,7 @@ typedef enum {
 	MOVE_TYPE_WALK, // gravity
 	MOVE_TYPE_FLY,
 	MOVE_TYPE_TOSS,
+	MOVE_TYPE_BLOOD,
 // gravity
 } g_move_type_t;
 
@@ -289,6 +290,7 @@ typedef struct {
 #define MOD_FRIENDLY_FIRE			0x8000000
 
 //action
+#define MOD_G_SPLASH			30
 #define MOD_HANDGRENADE			31
 #define MOD_HG_SPLASH			32
 #define MOD_HELD_GRENADE		33
@@ -304,6 +306,8 @@ typedef struct {
 #define MOD_BLEEDING                    43
 #define MOD_GAS                         44
 #define MOD_KICK                        45
+
+#define GIB_ORGANIC			0
 //PG BUND
 #define MOD_PUNCH                       50
 #define MOD_GRAPPLE                     51
@@ -612,7 +616,213 @@ struct g_client_s {
 	float quad_attack_time; // play attack sound when time > this
 
 	g_edict_t *chase_target; // player we are chasing
+
+//action
+
+	vec3_t bleedloc_offset;
 };
+
+//typedef client_respawn_t;
+
+// this structure is cleared on each PutClientInServer(),
+// except for 'client->pers'
+struct gclient_s
+{
+  // known to server
+  player_state_t ps;            // communicated by server to clients
+
+  int ping;
+
+  // private to game
+  // client_persistent_t pers;
+  // client_respawn_t resp;
+  //pmove_state_t old_pmove;      // for detecting out-of-pmove changes
+
+  //qboolean showscores;          // set layout stat
+  //FIREBLADE
+
+  int rate;                     // their "rate" setting
+
+  int scoreboardnum;
+  //FIREBLADE
+  //qboolean showinventory;       // set layout stat
+
+  //qboolean showhelp;
+  //qboolean showhelpicon;
+
+  int ammo_index;
+
+  int buttons;
+  int oldbuttons;
+  int latched_buttons;
+
+  //qboolean weapon_thunk;
+
+  g_item_t *newweapon;
+  // sum up damage over an entire frame, so
+  // shotgun blasts give a single big kick
+  int damage_armor;             // damage absorbed by armor
+
+  int damage_parmor;            // damage absorbed by power armor
+
+  int damage_blood;             // damage taken out of health
+
+  int damage_knockback;         // impact damage
+  vec3_t damage_from;           // origin for vector calculation
+
+  float killer_yaw;             // when dead, look at killer
+
+  //weaponstate_t weaponstate;
+  vec3_t kick_angles;           // weapon kicks
+
+  vec3_t kick_origin;
+  float v_dmg_roll, v_dmg_pitch, v_dmg_time;    // damage kicks
+
+  float fall_time, fall_value;  // for view drop on fall
+
+  float damage_alpha;
+  float bonus_alpha;
+  vec3_t damage_blend;
+  vec3_t v_angle;               // aiming direction
+
+  float bobtime;                // so off-ground doesn't change it
+
+  vec3_t oldviewangles;
+  vec3_t oldvelocity;
+
+  float next_drown_time;
+  int old_waterlevel;
+  int breather_sound;
+
+  int machinegun_shots;         // for weapon raising
+
+  // animation vars
+  int anim_end;
+  int anim_priority;
+  //qboolean anim_duck;
+  //qboolean anim_run;
+
+  // powerup timers
+  float quad_framenum;
+  float invincible_framenum;
+  float breather_framenum;
+  float enviro_framenum;
+
+  //qboolean grenade_blew_up;
+  float grenade_time;
+  int silencer_shots;
+  int weapon_sound;
+
+  float pickup_msg_time;
+
+  float flood_locktill;         // locked from talking
+
+  float flood_when[10];         // when messages were said
+
+  int flood_whenhead;           // head pointer for when said
+
+  float respawn_time;           // can respawn when time > this
+  // zucc
+  // weapon ammo information
+
+  int mk23_max;
+  int mk23_rds;
+
+  int dual_max;
+  int dual_rds;
+  int shot_max;
+  int shot_rds;
+  int sniper_max;
+  int sniper_rds;
+
+  int mp5_max;
+  int mp5_rds;
+
+  int m4_max;
+  int m4_rds;
+
+  int cannon_max;
+  int cannon_rds;
+  int knife_max;
+
+  int grenade_max;
+  int curr_weap;                // uses NAME_NUM values
+
+  int fired;                    // keep track of semi auto
+  int burst;                    // remember if player is bursting or not
+  int fast_reload;              // for shotgun/sniper rifle
+  int idle_weapon;              // how many frames to keep our weapon idle
+  int desired_fov;              // what fov does the player want? (via zooming)
+
+  int unique_weapon_total;
+  int unique_item_total;
+  int drop_knife;
+  int knife_sound;              // we attack several times when slashing but only want 1 sound
+
+
+  int no_sniper_display;
+  int bandaging;
+  int leg_damage;
+  int leg_dam_count;
+  int leg_noise;
+  int leghits;
+  int bleeding;                 //remaining points to bleed away
+  int bleed_remain;
+  int bleedloc;
+  vec3_t bleedloc_offset;       // location of bleeding (from origin)
+  vec3_t bleednorm;
+  float bleeddelay;             // how long until we bleed again
+
+  int bandage_stopped;
+  int have_laser;
+
+  int doortoggle;               // set by player with opendoor command
+
+  g_edict_t *attacker;            // keep track of the last person to hit us
+  int attacker_mod;             // and how they hit us
+  int attacker_loc;             // location of the hit
+
+  int push_timeout;             // timeout for how long an attacker will get fall death credit
+
+  int jumping;
+
+  int reload_attempts;
+  int weapon_attempts;
+
+  //qboolean inmenu;              // in menu
+//pmenuhnd_t *menu;             // current menu
+
+  g_edict_t *chase_target;
+  //qboolean update_chase;
+  int chase_mode;
+
+  //qboolean autoreloading;       //used for dual -> mk23 change with reloading
+
+  // Number of team kills this game
+  int team_kills;
+
+  //EEK
+  // Number of teammate woundings this game and a "before attack" tracker
+  int team_wounds;
+  int team_wounds_before;
+  int ff_warning;
+
+  // IP address of this host to be collected at Connection time.
+  // (getting at it later seems to be unreliable)
+  char ipaddr[100];             // changed to 100  -FB
+
+  int desired_zoom;             //either 0, 1, 2, 4 or 6. This is set to 0 if no zooming shall be done, and is set to 0 after zooming is done.
+
+  int ctf_uvtime;               // AQ2:TNG - JBravo adding UVtime
+
+  void *ctf_grapple;            // entity of grapple
+  int ctf_grapplestate;         // true if pulling
+  float ctf_grapplereleasetime; // time of grapple release
+
+  //qboolean team_force;          // are we forcing a team change
+};
+
+
 
 struct g_edict_s {
 	entity_state_t s;
