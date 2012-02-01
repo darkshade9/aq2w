@@ -1,6 +1,6 @@
 AC_PREREQ(2.56)
 
-AC_INIT(quake2world, 0.1.0, quake2@jdolan.dyndns.org)
+AC_INIT(quake2world, 0.1.1, quake2@jdolan.dyndns.org)
 
 AC_CONFIG_AUX_DIR(.)
 AC_CONFIG_MACRO_DIR(m4)
@@ -604,4 +604,5 @@ Quake2World $VERSION: Automatic configuration OK.
 
 Type 'make' to build Quake2World.  Type 'make install' to install it.
 Type 'make rsync-data' to install or update the game data.
+Type 'make rsync-action' to install or update Action files.
 ])

@@ -63,13 +63,13 @@
 #define PACKAGE_NAME "quake2world"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "quake2world 0.1.0"
+#define PACKAGE_STRING "quake2world 0.1.1"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "quake2world"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.1.0"
+#define PACKAGE_VERSION "0.1.1"
 
 /* Define to path containing the game data. */
 #define PKGDATADIR "/usr/local/share/quake2world"
@@ -81,4 +81,4 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"

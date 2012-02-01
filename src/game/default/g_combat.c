@@ -368,3 +368,565 @@ void G_RadiusDamage(g_edict_t *inflictor, g_edict_t *attacker,
 				(int) d, (int) k, DAMAGE_RADIUS, mod);
 	}
 }
+
+/*
+ * T_Damage (locational damage)
+ */
+/*
+  ============
+  T_Damage
+
+  targ            entity that is being damaged
+  inflictor       entity that is causing the damage
+  attacker        entity that caused the inflictor to damage targ
+  example: targ=monster, inflictor=rocket, attacker=player
+
+  dir                     direction of the attack
+  point           point at which the damage is being inflicted
+  normal          normal vector from that point
+  damage          amount of damage being inflicted
+  knockback       force to be applied against targ as a result of the damage
+
+  dflags          these flags are used to control how T_Damage works
+  DAMAGE_RADIUS                   damage was indirect (from a nearby explosion)
+  DAMAGE_NO_ARMOR                 armor does not protect from this damage
+  DAMAGE_ENERGY                   damage is from an energy based weapon
+  DAMAGE_NO_KNOCKBACK             do not affect velocity, just view angles
+  DAMAGE_BULLET                   damage is from a bullet (used for ricochets)
+  DAMAGE_NO_PROTECTION    kills godmode, armor, everything
+  ============
+*/
+
+#define LEG_DAMAGE (height/2.2) - abs(targ->mins[2]) - 3
+#define STOMACH_DAMAGE (height/1.8) - abs(targ->mins[2])
+#define CHEST_DAMAGE (height/1.4) - abs(targ->mins[2])
+
+#define HEAD_HEIGHT 12.0
+
+void
+T_Damage (g_edict_t *targ, g_edict_t *inflictor, g_edict_t *attacker, vec3_t dir,
+          vec3_t point, vec3_t normal, int damage, int knockback, int dflags,
+          int mod)
+{
+        g_client_t *client;
+        char buf[256];
+        int take, save;
+        int asave, psave;
+        int te_sparks, do_sparks = 0;
+        int damage_type = 0;            // used for MOD later
+        int bleeding = 0;               // damage causes bleeding
+        int head_success = 0;
+        int instant_dam = 1;
+        float z_rel;
+        int height;
+        float from_top;
+        vec_t dist;
+        float targ_maxs2;               //FB 6/1/99
+
+        // do this before teamplay check
+        if (!targ->takedamage)
+                return;
+
+        //FIREBLADE
+        if (teamplay->value && mod != MOD_TELEFRAG)
+        {
+                if (lights_camera_action)
+                        return;
+
+                // AQ2:TNG - JBravo adding UVtime
+                if (ctf->value && targ->client)
+                {
+                        if(targ->client->ctf_uvtime > 0)
+                                return;
+                        if (attacker->client && attacker->client->ctf_uvtime > 0)
+                                return;
+                }
+
+                // AQ2:TNG - JBravo adding FF after rounds
+                if (targ != attacker && targ->client && attacker->client &&
+                        targ->client->persistent.team == attacker->client->persistent.team &&
+                        ((int)(dmflags->value) & (DF_NO_FRIENDLY_FIRE))) {
+                                if (team_round_going)
+                                        return;
+                                else if (!ff_afterround->value)
+                                        return;
+                }
+                // AQ:TNG
+        }
+ //FIREBLADE
+
+
+        // damage reduction for shotgun
+        // if far away, reduce it to original action levels
+        if (mod == MOD_M3)
+        {
+                dist = Distance(targ->s.origin, inflictor->s.origin);
+                if (dist > 450.0)
+                        damage = damage - 2;
+        }
+
+        targ_maxs2 = targ->maxs[2];
+        if (targ_maxs2 == 4)
+                targ_maxs2 = CROUCHING_MAXS2;   //FB 6/1/99
+
+        height = abs (targ->mins[2]) + targ_maxs2;
+
+        // locational damage code
+        // base damage is head shot damage, so all the scaling is downwards
+        if (targ->client)
+        {
+                if (!((targ != attacker) &&
+                ((deathmatch->value && ((int)dmflags->value
+                & (DF_MODELTEAMS | DF_SKINTEAMS)))
+                || coop->value) && (attacker && attacker->client
+                && OnSameTeam (targ, attacker) &&
+                ((int)dmflags->value & DF_NO_FRIENDLY_FIRE)
+                && (team_round_going && ff_afterround->value))))
+
+                {
+
+                        // TNG Stats - Add +1 to hit, make sure that hc and m3 are handles differently
+
+                        if ((attacker->client) && (mod != MOD_M3) && (mod != MOD_HC)) {
+                                strcpy(attacker->client->resp.last_damaged_players, targ->client->persistent.net_name);
+
+                                if (!teamplay->value || team_round_going || stats_afterround->value) {
+                                        attacker->client->resp.stats_hits[mod]++;
+                                        attacker->client->resp.stats_shots_h++;
+                                }
+                        }
+
+                        // TNG Stats END
+
+                        if (mod == MOD_MK23 || mod == MOD_MP5 || mod == MOD_M4 ||
+                                mod == MOD_SNIPER || mod == MOD_DUAL || mod == MOD_KNIFE ||
+                                mod == MOD_KNIFE_THROWN)
+                        {
+                                z_rel = point[2] - targ->s.origin[2];
+                                from_top = targ_maxs2 - z_rel;
+                                if (from_top < 0.0)     //FB 6/1/99
+                                from_top = 0.0; //Slightly negative values were being handled wrong
+                                bleeding = 1;
+                                instant_dam = 0;
+
+                                // damage reduction for longer range pistol shots
+                                if (mod == MOD_MK23 || mod == MOD_DUAL)
+                                {
+                                        dist = Distance(targ->s.origin, inflictor->s.origin);
+                                        if (dist > 600.0 && dist < 1400.0)
+                                                damage = (int) (damage * 2 / 3);
+                                        else if (dist > 1400.0)
+                                                damage = (int) (damage * 1 / 2);
+                                }
+
+
+                                if (from_top < 2 * HEAD_HEIGHT)
+                                {
+                                        vec3_t new_point;
+                                        VerifyHeadShot (point, dir, HEAD_HEIGHT, new_point);
+                                        VectorSubtract (new_point, targ->s.origin, new_point);
+                                        //gi.cprintf(attacker, PRINT_HIGH, "z: %d y: %d x: %d\n", (int)(targ_maxs2 - new_point[2]),(int)(new_point[1]) , (int)(new_point[0]) );
+
+                                        if ((targ_maxs2 - new_point[2]) < HEAD_HEIGHT
+                                                && (abs (new_point[1])) < HEAD_HEIGHT * .8
+                                                && (abs (new_point[0])) < HEAD_HEIGHT * .8)
+                                        {
+                                                head_success = 1;
+                                        }
+                                }
+
+                                if (head_success)
+                                {
+                                        if (attacker->client)
+                                        {
+                                                if (!teamplay->value || team_round_going || stats_afterround->value) {
+                                                        attacker->client->resp.stats_headshot[mod]++;
+                                                }
+                                                //AQ2:TNG Slicer Last Damage Location
+                                                if (INV_AMMO(targ, HELM_NUM)) {
+                                                        attacker->client->resp.last_damaged_part = LOC_KVLR_HELMET;
+                                                        if ((!teamplay->value || team_round_going || stats_afterround->value))
+                                                                attacker->client->resp.stats_locations[LOC_KVLR_HELMET]++;
+                                                } else {
+                                                        attacker->client->resp.last_damaged_part = LOC_HDAM;
+                                                        if ((!teamplay->value || team_round_going || stats_afterround->value))
+                                                                attacker->client->resp.stats_locations[LOC_HDAM]++;
+                                                }
+
+                                                //AQ2:TNG END
+                                                if (!OnSameTeam (targ, attacker))
+                                                        attacker->client->resp.hs_streak++;
+
+                                                // AQ:TNG Igor[Rock] changing sound dir
+                                                if (attacker->client->resp.hs_streak == 3)
+                                                {
+                                                        if (use_rewards->value)
+                                                        {
+                                                                sprintf (buf, "ACCURACY %s!", attacker->client->persistent.net_name);
+                                                                CenterPrintAll (buf);
+                                                                gi.Sound (&g_game.edicts[0], gi.SoundIndex("tng/accuracy.wav"), ATTN_NONE);
+                                                        }
+                                                        attacker->client->resp.hs_streak = 0;
+                                                }
+                                                // end of changing sound dir
+                                        }
+
+                                        if (INV_AMMO(targ, HELM_NUM) && mod != MOD_KNIFE
+                                                && mod != MOD_KNIFE_THROWN && mod != MOD_SNIPER)
+                                        {
+                                               /* if (attacker->client)
+                                                {
+                                                        gi.cprintf (attacker, PRINT_HIGH, "%s has a Kevlar Helmet - AIM FOR THE BODY!\n",
+                                                                targ->client->persistent.net_name);
+                                                        gi.cprintf (targ, PRINT_HIGH, "Kevlar Helmet absorbed a part of %s's shot\n",
+                                                                attacker->client->persistent.net_name);
+                                               */ }
+                                                gi.Sound (other, gi.SoundIndex("misc/vest.wav"), ATTN_NORM);
+                                                damage = (int) (damage / 2);
+                                                damage_type = LOC_HDAM;
+                                                bleeding = 0;
+                                                instant_dam = 1;
+                                                stopAP = 1;
+                                                do_sparks = 1;
+                                        }
+                                        else if (INV_AMMO(targ, HELM_NUM) && mod == MOD_SNIPER)
+                                        {
+                                                if (attacker->client)
+                                                {
+                                                        gi.cprintf (attacker, PRINT_HIGH,
+                                                        "%s has a Kevlar Helmet, too bad you have AP rounds...\n",
+                                                        targ->client->persistent.net_name);
+                                                        gi.cprintf (targ, PRINT_HIGH,
+                                                        "Kevlar Helmet absorbed some of %s's AP sniper round\n",
+                                                        attacker->client->persistent.net_name);
+                                                }
+                                                damage = (int) (damage * 0.325);
+                                                gi.Sound (targ, CHAN_VOICE, gi.SoundIndex("misc/headshot.wav"), 
+                                                        ATTN_NORM);
+                                                damage_type = LOC_HDAM;
+                                        }
+                                        else
+                                        {
+                                                damage = damage * 1.8 + 1;
+                                                gi.cprintf (targ, PRINT_HIGH, "Head damage\n");
+                                                if (attacker->client)
+                                                        gi.cprintf (attacker, PRINT_HIGH, "You hit %s in the head\n",
+                                                                targ->client->persistent.net_name);
+                                                damage_type = LOC_HDAM;
+                                                if (mod != MOD_KNIFE && mod != MOD_KNIFE_THROWN)
+                                                        gi.Sound (targ, CHAN_VOICE, gi.SoundIndex ("misc/headshot.wav"), ATTN_NORM);
+                                        //else
+                                        //      gi.Sound(targ, CHAN_VOICE, gi.SoundIndex("misc/glurp.wav"), ATTN_NORM);
+                                        }
+                                }
+                                else if (z_rel < LEG_DAMAGE)
+                                {
+                                        damage = damage * .25;
+                                        gi.cprintf (targ, PRINT_HIGH, "Leg damage\n");
+                                        if (attacker->client)
+                                        {
+                                                attacker->client->resp.hs_streak = 0;
+                                                gi.cprintf (attacker, PRINT_HIGH, "You hit %s in the legs\n",
+                                                        targ->client->persistent.net_name);
+                                        }
+                                        damage_type = LOC_LDAM;
+                                        targ->client->leg_damage = 1;
+                                        targ->client->leghits++;
+                                        //AQ2:TNG Slicer Last Damage Location
+                                        attacker->client->resp.last_damaged_part = LOC_LDAM;
+                                        //AQ2:TNG END
+                                        if (!teamplay->value || team_round_going || stats_afterround->value)
+                                                attacker->client->resp.stats_locations[LOC_LDAM]++; // TNG Stats
+                                }
+                                else if (z_rel < STOMACH_DAMAGE)
+                                {
+                                        damage = damage * .4;
+                                        gi.cprintf (targ, PRINT_HIGH, "Stomach damage\n");
+                                        if (attacker->client)
+                                        {
+                                                attacker->client->resp.hs_streak = 0;
+                                                gi.cprintf (attacker, PRINT_HIGH, "You hit %s in the stomach\n",
+                                                        targ->client->persistent.net_name);
+                                        }
+                                        damage_type = LOC_SDAM;
+                                        //TempFile bloody gibbing
+                                        if (mod == MOD_SNIPER && sv_gib->value)
+                                                ThrowGib (targ, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
+                                        //AQ2:TNG Slicer Last Damage Location
+                                        attacker->client->resp.last_damaged_part = LOC_SDAM;
+                                        //AQ2:TNG END
+                                        if (!teamplay->value || team_round_going || stats_afterround->value)
+                                                attacker->client->resp.stats_locations[LOC_SDAM]++; // TNG Stats
+                                }
+                                else            //(z_rel < CHEST_DAMAGE)
+                                {
+                                        if (attacker->client)
+                                        {
+                                                attacker->client->resp.hs_streak = 0;
+                                        }
+
+                                        if (INV_AMMO(targ, KEV_NUM) && mod != MOD_KNIFE
+                                                && mod != MOD_KNIFE_THROWN && mod != MOD_SNIPER)
+                                        {
+                                                if (attacker->client)
+                                                {
+                                                        gi.cprintf (attacker, PRINT_HIGH, "%s has a Kevlar Vest - AIM FOR THE HEAD!\n",
+                                                                targ->client->persistent.net_name);
+                                                        gi.cprintf (targ, PRINT_HIGH, "Kevlar Vest absorbed most of %s's shot\n",
+                                                                attacker->client->persistent.net_name);
+                                                        /*
+                                                        if (IsFemale(targ))
+                                                        gi.cprintf(attacker, PRINT_HIGH, "You bruised %s through her Kevlar Vest\n", targ->client->persistent.net_name);
+                                                        else
+                                                        gi.cprintf(attacker, PRINT_HIGH, "You bruised %s through his Kevlar Vest\n", targ->client->persistent.net_name);
+                                                        */
+                                                }
+                                                gi.Sound (targ, CHAN_ITEM, gi.SoundIndex ("misc/vest.wav"), ATTN_NORM);
+                                                damage = (int) (damage / 10);
+                                                damage_type = LOC_CDAM;
+                                                bleeding = 0;
+                                                instant_dam = 1;
+                                                stopAP = 1;
+                                                do_sparks = 1;
+                                        }
+                                        else if (INV_AMMO(targ, KEV_NUM) && mod == MOD_SNIPER)
+                                        {
+                                                if (attacker->client)
+                                                {
+                                                        gi.cprintf (attacker, PRINT_HIGH, "%s has a Kevlar Vest, too bad you have AP rounds...\n",
+                                                                targ->client->persistent.net_name);
+                                                        gi.cprintf (targ, PRINT_HIGH, "Kevlar Vest absorbed some of %s's AP sniper round\n",
+                                                                attacker->client->persistent.net_name);
+                                                }
+                                                damage = damage * .325;
+                                                damage_type = LOC_CDAM;
+                                        }
+                                        else
+                                        {
+                                                damage = damage * .65;
+                                                gi.cprintf (targ, PRINT_HIGH, "Chest damage\n");
+                                                if (attacker->client)
+                                                        gi.cprintf (attacker, PRINT_HIGH, "You hit %s in the chest\n",
+                                                                targ->client->persistent.net_name);
+                                                damage_type = LOC_CDAM;
+                                                //TempFile bloody gibbing
+                                                if (mod == MOD_SNIPER && sv_gib->value)
+                                                        ThrowGib (targ, "models/objects/gibs/sm_meat/tris.md2", damage, GIB_ORGANIC);
+                                        }
+                                        //AQ2:TNG Slicer Last Damage Location
+                                        if (INV_AMMO(targ, KEV_NUM) && mod != MOD_KNIFE && mod != MOD_KNIFE_THROWN) {
+                                                attacker->client->resp.last_damaged_part = LOC_KVLR_VEST;
+                                                if (!teamplay->value || team_round_going || stats_afterround->value)
+                                                        attacker->client->resp.stats_locations[LOC_KVLR_VEST]++; // TNG Stats
+                                        } else {
+                                                attacker->client->resp.last_damaged_part = LOC_CDAM;
+                                                if (!teamplay->value || team_round_going || stats_afterround->value)
+                                                        attacker->client->resp.stats_locations[LOC_CDAM]++; // TNG Stats
+                                        }
+                                        //AQ2:TNG END
+
+                                }
+              /*else
+                 {
+
+                 // no mod to damage
+                 gi.cprintf(targ, PRINT_HIGH, "Head damage\n");
+                 if (attacker->client)
+                 gi.cprintf(attacker, PRINT_HIGH, "You hit %s in the head\n", targ->client->persistent.net_name);
+                 damage_type = LOC_HDAM;
+                 gi.Sound(targ, CHAN_VOICE, gi.SoundIndex("misc/headshot.wav"), ATTN_NORM);
+                 } */
+                        }
+                        if (team_round_going && attacker->client && targ != attacker
+                                && OnSameTeam (targ, attacker))
+                        {
+                                Add_TeamWound (attacker, targ, mod);
+                        }
+                }
+    }
+
+
+        if (damage_type && !instant_dam)        // bullets but not vest hits
+        {
+                vec3_t temp;
+                vec3_t temporig;
+                //vec3_t forward;
+                VectorMA (targ->s.origin, 50, dir, temp);
+                //AngleVectors (attacker->client->v_angle, forward, NULL, NULL);
+                VectorScale (dir, 20, temp);
+                VectorAdd (point, temp, temporig);
+                if (mod != MOD_SNIPER)
+                        spray_blood (targ, temporig, dir, damage, mod);
+                else
+                        spray_sniper_blood (targ, temporig, dir);
+        }
+
+        if (mod == MOD_FALLING && !(targ->flags & FL_GODMODE) )
+        {
+                if (targ->client && targ->health > 0)
+                {
+                        gi.cprintf (targ, PRINT_HIGH, "Leg damage\n");
+                        targ->client->leg_damage = 1;
+                        targ->client->leghits++;
+                //      bleeding = 1; for testing
+                }
+        }
+
+
+        // friendly fire avoidance
+        // if enabled you can't hurt teammates (but you can hurt yourself)
+        // knockback still occurs
+        if (targ != attacker &&
+                ((deathmatch->value && ((int)dmflags->value & (DF_MODELTEAMS | DF_SKINTEAMS)))
+                || coop->value))
+        {
+                if (OnSameTeam (targ, attacker))
+                {
+                        if ((int)dmflags->value & DF_NO_FRIENDLY_FIRE &&
+                                (team_round_going || !ff_afterround->value))
+                                damage = 0;
+                        else
+                                mod |= MOD_FRIENDLY_FIRE;
+                }
+        }
+
+        meansOfDeath = mod;
+        locOfDeath = damage_type;       // location
+
+        client = targ->client;
+
+        if (dflags & DAMAGE_BULLET)
+                te_sparks = TE_BULLET_SPARKS;
+        else
+                te_sparks = TE_SPARKS;
+
+        VectorNormalize (dir);
+        // team damage avoidance
+        if (!(dflags & DAMAGE_NO_PROTECTION) && CheckTeamDamage (targ, attacker))
+                return;
+        if ((mod == MOD_M3) || (mod == MOD_HC)
+        || (mod == MOD_HELD_GRENADE) || (mod == MOD_HG_SPLASH)
+        || (mod == MOD_G_SPLASH) )
+        {
+                //FB 6/3/99 - shotgun damage report stuff
+                int playernum = targ - g_edicts;
+                playernum--;
+                if (playernum >= 0 && playernum <= game.maxclients - 1)
+                        *(took_damage + playernum) = 1;
+                //FB 6/3/99
+
+                bleeding = 1;
+                instant_dam = 0;
+        }
+
+  /*        if ( (mod == MOD_M3) || (mod == MOD_HC) )
+     {
+     instant_dam = 1;
+     remain = take % 2;
+     take = (int)(take/2); // balances out difference in how action and axshun handle damage/bleeding
+
+     }
+   */
+
+        if (ctf->value)
+                CTFCheckHurtCarrier (targ, attacker);
+
+        // do the damage
+        if (take)
+        {
+                // zucc added check for stopAP, if it hit a vest we want sparks
+                if (((targ->svflags) || (client)) && !do_sparks)
+                        SpawnDamage (TE_BLOOD, point, normal, take);
+                else
+                        SpawnDamage (te_sparks, point, normal, take);
+
+                // all things that have at least some instantaneous damage, i.e. bruising/falling
+                if (instant_dam)
+                        targ->health = targ->health - take;
+
+                if (targ->health <= 0)
+                {
+                        if (client && attacker->client)
+                        {
+                                //Added these here also, if this is the last shot and before shots is from
+                                //different attacker, msg's would go to wrong client -M
+                                if (!OnSameTeam (attacker, targ))
+                                        attacker->client->resp.damage_dealt += damage;
+
+                                client->attacker = attacker;
+                                client->attacker_mod = mod;
+                                client->attacker_loc = damage_type;
+                        }
+
+        }
+
+        if (client)
+        {
+                if (!(targ->flags & FL_GODMODE) && (take))
+                        targ->pain (targ, attacker, knockback, take);
+        }
+        else if (take)
+        {
+                if (targ->pain)
+                        targ->pain (targ, attacker, knockback, take);
+        }
+
+        // add to the damage inflicted on a player this frame
+        // the total will be turned into screen blends and view angle kicks
+        // at the end of the frame
+        if (client)
+        {
+                client->damage_parmor += psave;
+                client->damage_armor += asave;
+                client->damage_blood += take;
+                client->damage_knockback += knockback;
+                //zucc handle adding bleeding here
+                if (damage_type && bleeding)    // one of the hit location weapons
+                {
+                        /* zucc add in partial bleeding, changed
+                        if ( client->bleeding < 4*damage*BLEED_TIME )
+                        {
+                        client->bleeding = 4*damage*BLEED_TIME + client->bleeding/2;
+
+                        }
+                        else
+                        {
+                        client->bleeding += damage*BLEED_TIME*2;
+
+                        } */
+                        client->bleeding += damage * BLEED_TIME;
+                        VectorSubtract (point, targ->absmax, targ->client->bleedloc_offset);
+                        //VectorSubtract(point, targ->s.origin,  client->bleedloc_offset);
+
+                }
+                else if (bleeding)
+                {
+                        /*
+                        if ( client->bleeding < damage*BLEED_TIME )
+                        {
+                        client->bleeding = damage*BLEED_TIME;
+                        //client->bleedcount = 0;
+                        } */
+                        client->bleeding += damage * BLEED_TIME;
+                        VectorSubtract (point, targ->absmax, targ->client->bleedloc_offset);
+                        //VectorSubtract(point, targ->s.origin,  client->bleedloc_offset);
+
+                }
+                if (attacker->client)
+                {
+                        if (!OnSameTeam (attacker, targ))
+                                attacker->client->resp.damage_dealt += damage;
+
+                        client->attacker = attacker;
+                        client->attacker_mod = mod;
+                        client->attacker_loc = damage_type;
+                        client->push_timeout = 50;
+                        //VectorCopy(dir, client->bleeddir );
+                        //VectorCopy(point, client->bleedpoint );
+                        //VectorCopy(normal, client->bleednormal);
+
+                }
+                VectorCopy (point, client->damage_from);
+        }
+}
+

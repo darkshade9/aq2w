@@ -179,12 +179,12 @@ configure: failed program was:
 | /* confdefs.h.  */
 | #define PACKAGE_NAME "quake2world"
 | #define PACKAGE_TARNAME "quake2world"
-| #define PACKAGE_VERSION "0.1.0"
-| #define PACKAGE_STRING "quake2world 0.1.0"
+| #define PACKAGE_VERSION "0.1.1"
+| #define PACKAGE_STRING "quake2world 0.1.1"
 | #define PACKAGE_BUGREPORT "quake2@jdolan.dyndns.org"
 | #define BUILD_HOST "x86_64-linux-gnu"
 | #define PACKAGE "quake2world"
-| #define VERSION "0.1.0"
+| #define VERSION "0.1.1"
 | /* end confdefs.h.  */
 | #include <ac_nonexistent.h>
 configure:6696: result: gcc -E
@@ -197,12 +197,12 @@ configure: failed program was:
 | /* confdefs.h.  */
 | #define PACKAGE_NAME "quake2world"
 | #define PACKAGE_TARNAME "quake2world"
-| #define PACKAGE_VERSION "0.1.0"
-| #define PACKAGE_STRING "quake2world 0.1.0"
+| #define PACKAGE_VERSION "0.1.1"
+| #define PACKAGE_STRING "quake2world 0.1.1"
 | #define PACKAGE_BUGREPORT "quake2@jdolan.dyndns.org"
 | #define BUILD_HOST "x86_64-linux-gnu"
 | #define PACKAGE "quake2world"
-| #define VERSION "0.1.0"
+| #define VERSION "0.1.1"
 | /* end confdefs.h.  */
 | #include <ac_nonexistent.h>
 configure:6810: checking for ANSI C header files
@@ -333,12 +333,12 @@ configure: failed program was:
 | /* confdefs.h.  */
 | #define PACKAGE_NAME "quake2world"
 | #define PACKAGE_TARNAME "quake2world"
-| #define PACKAGE_VERSION "0.1.0"
-| #define PACKAGE_STRING "quake2world 0.1.0"
+| #define PACKAGE_VERSION "0.1.1"
+| #define PACKAGE_STRING "quake2world 0.1.1"
 | #define PACKAGE_BUGREPORT "quake2@jdolan.dyndns.org"
 | #define BUILD_HOST "x86_64-linux-gnu"
 | #define PACKAGE "quake2world"
-| #define VERSION "0.1.0"
+| #define VERSION "0.1.1"
 | #define STDC_HEADERS 1
 | #define HAVE_SYS_TYPES_H 1
 | #define HAVE_SYS_STAT_H 1
@@ -397,12 +397,12 @@ configure: failed program was:
 | /* confdefs.h.  */
 | #define PACKAGE_NAME "quake2world"
 | #define PACKAGE_TARNAME "quake2world"
-| #define PACKAGE_VERSION "0.1.0"
-| #define PACKAGE_STRING "quake2world 0.1.0"
+| #define PACKAGE_VERSION "0.1.1"
+| #define PACKAGE_STRING "quake2world 0.1.1"
 | #define PACKAGE_BUGREPORT "quake2@jdolan.dyndns.org"
 | #define BUILD_HOST "x86_64-linux-gnu"
 | #define PACKAGE "quake2world"
-| #define VERSION "0.1.0"
+| #define VERSION "0.1.1"
 | #define STDC_HEADERS 1
 | #define HAVE_SYS_TYPES_H 1
 | #define HAVE_SYS_STAT_H 1
@@ -474,7 +474,7 @@ config.status:1065: creating config.h
 config.status:1339: executing depfiles commands
 config.status:1339: executing libtool commands
 configure:16023: result:
-Quake2World 0.1.0: Automatic configuration OK.
+Quake2World 0.1.1: Automatic configuration OK.
 
   Configuration summary:
     Platform: .......... x86_64-unknown-linux-gnu
@@ -681,9 +681,9 @@ OTOOL=''
 PACKAGE='quake2world'
 PACKAGE_BUGREPORT='quake2@jdolan.dyndns.org'
 PACKAGE_NAME='quake2world'
-PACKAGE_STRING='quake2world 0.1.0'
+PACKAGE_STRING='quake2world 0.1.1'
 PACKAGE_TARNAME='quake2world'
-PACKAGE_VERSION='0.1.0'
+PACKAGE_VERSION='0.1.1'
 PATH_SEPARATOR=':'
 PKGDATADIR='/usr/local/share/quake2world'
 PROFILE_CFLAGS=''
@@ -699,7 +699,7 @@ SHELL='/bin/sh'
 SO_CFLAGS=' -fPIC -DPIC'
 STRIP='strip'
 TOOL_DIRS=''
-VERSION='0.1.0'
+VERSION='0.1.1'
 WARN_CFLAGS='-pedantic -W -Wall'
 WINDOWS_FALSE=''
 WINDOWS_TRUE='#'
@@ -763,12 +763,12 @@ target_vendor='unknown'
 
 #define PACKAGE_NAME "quake2world"
 #define PACKAGE_TARNAME "quake2world"
-#define PACKAGE_VERSION "0.1.0"
-#define PACKAGE_STRING "quake2world 0.1.0"
+#define PACKAGE_VERSION "0.1.1"
+#define PACKAGE_STRING "quake2world 0.1.1"
 #define PACKAGE_BUGREPORT "quake2@jdolan.dyndns.org"
 #define BUILD_HOST "x86_64-linux-gnu"
 #define PACKAGE "quake2world"
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 #define STDC_HEADERS 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_SYS_STAT_H 1

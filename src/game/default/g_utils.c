@@ -469,8 +469,8 @@ boolean_t G_KillBox(g_edict_t *ent) {
  */
 char *G_GameplayName(int g) {
 	switch (g) {
-	case INSTAGIB:
-		return "INSTAGIB";
+	case CTF:
+		return "CTF";
 	case ARENA:
 		return "ARENA";
 	default:
@@ -490,15 +490,15 @@ int G_GameplayByName(char *c) {
 	case '0':
 		return DEATHMATCH;
 	case '1':
-		return INSTAGIB;
+		return CTF;
 	case '2':
 		return ARENA;
 	default:
 		break;
 	}
 
-	if (strstr(Lowercase(c), "insta"))
-		return INSTAGIB;
+	if (strstr(Lowercase(c), "ctf"))
+		return CTF;
 	if (strstr(Lowercase(c), "arena"))
 		return ARENA;
 	return DEATHMATCH;

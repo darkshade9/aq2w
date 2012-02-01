@@ -195,16 +195,10 @@ boolean_t G_AddAmmo(g_edict_t *ent, g_item_t *item, short count) {
 		max = ent->client->persistent.max_bullets;
 	else if (item->tag == AMMO_GRENADES)
 		max = ent->client->persistent.max_grenades;
-	else if (item->tag == AMMO_ROCKETS)
-		max = ent->client->persistent.max_rockets;
-	else if (item->tag == AMMO_CELLS)
-		max = ent->client->persistent.max_cells;
-	else if (item->tag == AMMO_BOLTS)
-		max = ent->client->persistent.max_bolts;
-	else if (item->tag == AMMO_SLUGS)
-		max = ent->client->persistent.max_slugs;
-	else if (item->tag == AMMO_NUKES)
-		max = ent->client->persistent.max_nukes;
+	else if (item->tag == AMMO_ROUNDS)
+		max = ent->client->persistent.max_rounds;
+	else if (item->tag == AMMO_KNIVES)
+		max = ent->client->persistent.max_knives;
 	else
 		return false;
 
@@ -944,7 +938,7 @@ g_item_t
 								"weapons/common/pickup.wav",
 								"models/weapons/hyperblaster/tris.md3",
 								EF_ROTATE | EF_BOB | EF_PULSE,
-								"w_hyperblaster", "Hyperblaster", 1, "Cells",
+								"w_hyperblaster", "Hyperblaster", 1, "Knives",
 								ITEM_WEAPON, 0,
 								"weapons/hyperblaster/fire.wav weapons/hyperblaster/hit.wav" },
 
@@ -1009,46 +1003,22 @@ g_item_t
 								"Grenades", 10, "grenades", ITEM_AMMO,
 								AMMO_GRENADES, "" },
 
-						/*QUAKED ammo_rockets(.3 .3 1)(-16 -16 -16)(16 16 16)
+						/*QUAKED ammo_rounds(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
-						{ "ammo_rockets", G_PickupAmmo, NULL, G_DropAmmo, NULL,
+						{ "ammo_rounds", G_PickupAmmo, NULL, G_DropAmmo, NULL,
 								"ammo/common/pickup.wav",
 								"models/ammo/rockets/tris.md3", EF_ROTATE
-										| EF_BOB | EF_PULSE, "a_rockets",
-								"Rockets", 10, NULL, ITEM_AMMO, AMMO_ROCKETS,
+										| EF_BOB | EF_PULSE, "a_rounds",
+								"Rockets", 10, NULL, ITEM_AMMO, AMMO_ROUNDS,
 								"" },
 
-						/*QUAKED ammo_cells(.3 .3 1)(-16 -16 -16)(16 16 16)
+						/*QUAKED ammo_knives(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 */
-						{ "ammo_cells", G_PickupAmmo, NULL, G_DropAmmo, NULL,
+						{ "ammo_knives", G_PickupAmmo, NULL, G_DropAmmo, NULL,
 								"ammo/common/pickup.wav",
 								"models/ammo/cells/tris.md3", EF_ROTATE
-										| EF_BOB | EF_PULSE, "a_cells",
-								"Cells", 50, NULL, ITEM_AMMO, AMMO_CELLS, "" },
-
-						/*QUAKED ammo_bolts(.3 .3 1)(-16 -16 -16)(16 16 16)
-						 */
-						{ "ammo_bolts", G_PickupAmmo, NULL, G_DropAmmo, NULL,
-								"ammo/common/pickup.wav",
-								"models/ammo/bolts/tris.md3", EF_ROTATE
-										| EF_BOB | EF_PULSE, "a_bolts",
-								"Bolts", 25, NULL, ITEM_AMMO, AMMO_BOLTS, "" },
-
-						/*QUAKED ammo_slugs(.3 .3 1)(-16 -16 -16)(16 16 16)
-						 */
-						{ "ammo_slugs", G_PickupAmmo, NULL, G_DropAmmo, NULL,
-								"ammo/common/pickup.wav",
-								"models/ammo/slugs/tris.md3", EF_ROTATE
-										| EF_BOB | EF_PULSE, "a_slugs",
-								"Slugs", 10, NULL, ITEM_AMMO, AMMO_SLUGS, "" },
-
-						/*QUAKED ammo_nukes(.3 .3 1)(-16 -16 -16)(16 16 16)
-						 */
-						{ "ammo_nukes", G_PickupAmmo, NULL, G_DropAmmo, NULL,
-								"ammo/common/pickup.wav",
-								"models/ammo/nukes/tris.md3", EF_ROTATE
-										| EF_BOB | EF_PULSE, "a_nukes",
-								"Nukes", 2, NULL, ITEM_AMMO, AMMO_NUKES, "" },
+										| EF_BOB | EF_PULSE, "a_knives",
+								"Cells", 50, NULL, ITEM_AMMO, AMMO_KNIVES, "" },
 
 						/*QUAKED item_adrenaline(.3 .3 1)(-16 -16 -16)(16 16 16)
 						 gives +1 to maximum health

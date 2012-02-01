@@ -434,18 +434,17 @@ static void G_InitClientLocals(g_client_t *client) {
 
 	client->persistent.max_shells = 80;
 	client->persistent.max_bullets = 200;
-	client->persistent.max_grenades = 50;
-	client->persistent.max_rockets = 50;
-	client->persistent.max_cells = 200;
-	client->persistent.max_bolts = 100;
-	client->persistent.max_slugs = 50;
-	client->persistent.max_nukes = 10;
+	client->persistent.max_grenades = 3;
+	client->persistent.max_rounds = 20;
+	client->persistent.max_knives = 20;
 
-	// instagib gets railgun and slugs, both in normal mode and warmup
+/* old instagib and arena code
+	/ instagib gets railgun and slugs, both in normal mode and warmup
 	if (g_level.gameplay == INSTAGIB) {
 		G_Give(client, "Railgun", 1000);
 		item = G_FindItem("Railgun");
 	}
+	
 	// arena or dm warmup yields all weapons, health, etc..
 	else if ((g_level.gameplay == ARENA) || g_level.warmup) {
 		G_Give(client, "Railgun", 50);
@@ -466,7 +465,7 @@ static void G_InitClientLocals(g_client_t *client) {
 		G_Give(client, "Shotgun", 10);
 		item = G_FindItem("Shotgun");
 	}
-
+*/
 	if (G_GiveLevelLocals(client)) { // use the best weapon we were given by level
 		G_UseBestWeapon(client);
 		client->persistent.weapon = client->new_weapon;
@@ -478,6 +477,8 @@ static void G_InitClientLocals(g_client_t *client) {
 	client->persistent.last_weapon = NULL;
 	client->new_weapon = NULL;
 }
+
+
 
 /*
  * G_EnemyRangeFromSpot

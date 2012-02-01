@@ -74,11 +74,8 @@ typedef enum {
 	AMMO_SHELLS,
 	AMMO_BULLETS,
 	AMMO_GRENADES,
-	AMMO_ROCKETS,
-	AMMO_CELLS,
-	AMMO_BOLTS,
-	AMMO_SLUGS,
-	AMMO_NUKES
+	AMMO_ROUNDS,
+	AMMO_KNIVES,
 } g_ammo_t;
 
 // armor types
@@ -107,7 +104,7 @@ typedef enum {
 // a synonym for readability
 #define MOVE_TYPE_THINK MOVE_TYPE_NONE
 
-// gitem_t->flags
+// g_item_t->flags
 typedef enum {
 	ITEM_WEAPON, ITEM_AMMO, ITEM_ARMOR, ITEM_FLAG, ITEM_HEALTH, ITEM_POWERUP
 } g_item_type_t;
@@ -170,7 +167,6 @@ typedef struct {
 	char *item;
 } g_spawn_temp_t;
 
-#define FOFS(x) (ptrdiff_t)&(((g_edict_t *)0)->x)
 #define SOFS(x) (ptrdiff_t)&(((g_spawn_temp_t *)0)->x)
 
 typedef enum {
@@ -286,21 +282,640 @@ typedef struct {
 #define MOD_SUICIDE					20
 #define MOD_EXPLOSIVE				21
 #define MOD_TRIGGER_HURT			22
+#define MOD_HELD_GRENADE                23
+#define MOD_SPLASH                      24
+#define MOD_G_SPLASH			25
+#define MOD_HG_SPLASH			26
 #define MOD_FRIENDLY_FIRE			0x8000000
 
 #define MAX_MAP_LIST_ELTS 64
 #define MAP_LIST_WEIGHT 16384
 
 //Action Additions
+#define DAMAGE_TIME             0.5
+#define FALL_TIME               0.3
+#define MELEE_DISTANCE  80
+
 #define ACTION_VERSION  "TNG " VERSION
 #define TNG_VERSION             "AQ2W: The Next Generation"
 #define TNG_VERSION2    "AQ2W: The Next Generation " VERSION
 #define MAX_LAST_KILLED				8
 
+#define MK23_NAME    "MK23 Pistol"
+#define MP5_NAME     "MP5/10 Submachinegun"
+#define M4_NAME      "M4 Assault Rifle"
+#define M3_NAME      "M3 Super 90 Assault Shotgun"
+#define HC_NAME      "Handcannon"
+#define SNIPER_NAME  "Sniper Rifle"
+#define DUAL_NAME    "Dual MK23 Pistols"
+#define KNIFE_NAME   "Combat Knife"
+#define GRENADE_NAME "M26 Fragmentation Grenade"
+
+#define SIL_NAME     "Silencer"
+#define SLIP_NAME    "Stealth Slippers"
+#define BAND_NAME    "Bandolier"
+#define KEV_NAME     "Kevlar Vest"
+#define HELM_NAME    "Kevlar Helmet"
+#define LASER_NAME   "Lasersight"
+
+//AQ2:TNG - Igor adding wp_flags/itm_flags
+#define WPF_MK23      0x00000001
+#define WPF_MP5       0x00000002
+#define WPF_M4        0x00000004
+#define WPF_M3        0x00000008
+#define WPF_HC        0x00000010
+#define WPF_SNIPER    0x00000020
+#define WPF_DUAL      0x00000040
+#define WPF_KNIFE     0x00000080
+#define WPF_GRENADE   0x00000100
+
+#define ITF_SIL       0x00000001
+#define ITF_SLIP      0x00000002
+#define ITF_BAND      0x00000004
+#define ITF_KEV       0x00000008
+#define ITF_LASER     0x00000010
+#define ITF_HELM      0x00000020
+
+#define NOTEAM          0
+#define TEAM1           1
+#define TEAM2           2
+#define TEAM3           3
+
+#define MAX_TEAMS       3
+#define TEAM_TOP        (MAX_TEAMS+1)
+
+#define WINNER_NONE     0
+#define WINNER_TEAM1    1
+#define WINNER_TEAM2    2
+#define WINNER_TEAM3    3
+#define WINNER_TIE      4
+
+
+
+#define NO_NUM                                  -1
+
+#define MK23_NUM                                0
+#define MP5_NUM                                 1
+#define M4_NUM                                  2
+#define M3_NUM                                  3
+#define HC_NUM                                  4
+#define SNIPER_NUM                              5
+#define DUAL_NUM                                6
+#define KNIFE_NUM                               7
+#define GRENADE_NUM                             8
+
+#define SIL_NUM                                 9
+#define SLIP_NUM                                10
+#define BAND_NUM                                11
+#define KEV_NUM                                 12
+#define LASER_NUM                               13
+#define HELM_NUM                                14
+
+#define MK23_ANUM                               15
+#define MP5_ANUM                                16
+#define M4_ANUM                                 17
+#define SHELL_ANUM                              18
+#define SNIPER_ANUM                             19
+
+#define FLAG_T1_NUM                             20
+#define FLAG_T2_NUM                             21
+
+#define GRAPPLE_NUM                             22
+#define MAX_SKINLEN                             32
+#define WEAPON_COUNT                    9
+#define ITEM_COUNT                              6
+#define AMMO_COUNT                              5
+#define ILIST_COUNT                             WEAPON_COUNT+ITEM_COUNT+AMMO_COUNT
+
+typedef struct itemList_s
+{
+        int             index;
+        int             flag;
+} itemList_t;
+
+extern itemList_t items[ILIST_COUNT];
+extern int tnums[ITEM_COUNT];
+
+// types of locations that can be hit
+#define LOC_HDAM 1              // head
+#define LOC_CDAM 2              // chest
+#define LOC_SDAM 3              // stomach
+#define LOC_LDAM 4              // legs
+#define LOC_KVLR_HELMET 5       // kevlar helmet        Freud, for %D
+#define LOC_KVLR_VEST 6         // kevlar vest          Freud, for %D
+#define LOC_NO 7                // Shot by shotgun or handcannon
+
+// sniper modes
+#define SNIPER_1X 0
+#define SNIPER_2X 1
+#define SNIPER_4X 2
+#define SNIPER_6X 3
+
+//TempFile sniper zoom moved to constants
+#define SNIPER_FOV1     90
+#define SNIPER_FOV2     45
+#define SNIPER_FOV4     20
+#define SNIPER_FOV6     10
+
+#define GRENADE_IDLE_FIRST  40
+#define GRENADE_IDLE_LAST   69
+#define GRENADE_THROW_FIRST 4
+#define GRENADE_THROW_LAST  9   // throw it on frame 8?
+// these should be server variables, when I get around to it
+//#define UNIQUE_WEAPONS_ALLOWED 2
+//#define UNIQUE_ITEMS_ALLOWED   1
+#define SPEC_WEAPON_RESPAWN 1
+#define BANDAGE_TIME    27      // 10 = 1 second
+#define BLEED_TIME      10      // 10 = 1 second is time for losing 1 health at slowest bleed rate
+// Igor's back in Time to hard grenades :-)
+//#define GRENADE_DAMRAD  170
+#define GRENADE_DAMRAD  250
+
+//AQ2:TNG - Slicer New location support
+#define MAX_LOCATIONS_IN_BASE           256     // Max amount of locations
+// location structure
+typedef struct
+{
+  int x;
+  int y;
+  int z;
+  int rx;
+  int ry;
+  int rz;
+  char desc[128];
+}
+placedata_t;
+
+// Externals for accessing location structures
+extern int ml_count;
+extern placedata_t locationbase[];
+extern char ml_build[6];
+extern char ml_creator[101];
+//AQ2:TNG END
+
+void Cmd_Ghost_f (g_edict_t *ent);
+void Cmd_AutoRecord_f(g_edict_t *ent);
+
+typedef struct team_s
+{
+        char name[32];
+        char skin[MAX_SKINLEN];
+        char skin_index[MAX_QPATH];
+        int score, total;
+        int ready, locked;
+        int pauses_used, wantReset;
+        cvar_t  *teamscore;
+}team_t;
+
+extern team_t teams[TEAM_TOP];
+extern int pause_time;
+#define PARSE_BUFSIZE 256
+
 
 // voting
 #define MAX_VOTE_TIME 60.0
 #define VOTE_MAJORITY 0.51
+
+typedef enum
+{
+  DAMAGE_NO,
+  DAMAGE_YES,                   // will take damage if hit
+  DAMAGE_AIM                    // auto targeting recognizes this
+}
+damage_t;
+
+typedef enum
+{
+  WEAPON_READY,
+  WEAPON_ACTIVATING,
+  WEAPON_DROPPING,
+  WEAPON_FIRING,
+
+  WEAPON_END_MAG,
+  WEAPON_RELOADING,
+  WEAPON_BURSTING,
+  WEAPON_BUSY,                  // used by sniper rifle when engaging zoom, if I want to make laser sight toggle on/off  this could be used for th$
+  WEAPON_BANDAGING
+}
+weaponstate_t;
+
+//deadflag
+#define DEAD_NO                         0
+#define DEAD_DYING                      1
+#define DEAD_DEAD                       2
+#define DEAD_RESPAWNABLE                3
+//range
+#define RANGE_MELEE                     0
+#define RANGE_NEAR                      1
+#define RANGE_MID                       2
+#define RANGE_FAR                       3
+//gib types
+#define GIB_ORGANIC                     0
+#define GIB_METALLIC                    1
+// armor types
+#define ARMOR_NONE                      0
+#define ARMOR_JACKET                    1
+
+// handedness values
+#define RIGHT_HANDED                    0
+#define LEFT_HANDED                     1
+#define CENTER_HANDED                   2
+// game.serverflags values
+#define SFL_CROSS_TRIGGER_1             0x00000001
+#define SFL_CROSS_TRIGGER_2             0x00000002
+#define SFL_CROSS_TRIGGER_3             0x00000004
+#define SFL_CROSS_TRIGGER_4             0x00000008
+#define SFL_CROSS_TRIGGER_5             0x00000010
+#define SFL_CROSS_TRIGGER_6             0x00000020
+#define SFL_CROSS_TRIGGER_7             0x00000040
+#define SFL_CROSS_TRIGGER_8             0x00000080
+#define SFL_CROSS_TRIGGER_MASK          0x000000ff
+// noise types for PlayerNoise
+#define PNOISE_SELF                     0
+#define PNOISE_WEAPON                   1
+#define PNOISE_IMPACT                   2
+
+// edict->movetype values
+typedef enum
+{
+  MOVETYPE_NONE,                // never moves
+  MOVETYPE_NOCLIP,              // origin and angles change with no interaction
+  MOVETYPE_PUSH,                // no clip to world, push on box contact
+  MOVETYPE_STOP,                // no clip to world, stops on box contact
+
+  MOVETYPE_WALK,                // gravity
+  MOVETYPE_STEP,                // gravity, special edge handling
+  MOVETYPE_FLY,
+  MOVETYPE_TOSS,                // gravity
+  MOVETYPE_FLYMISSILE,          // extra size to monsters
+  MOVETYPE_BOUNCE,
+  MOVETYPE_BLOOD
+}
+movetype_t;
+
+extern int sm_meat_index;
+extern int snd_fry;
+
+//means of death
+#define MOD_MK23                        34
+#define MOD_MP5                         35
+#define MOD_M4                          36
+#define MOD_M3                          37
+#define MOD_HC                          38
+#define MOD_SNIPER                      39
+#define MOD_DUAL                        40
+#define MOD_KNIFE                       41
+#define MOD_KNIFE_THROWN                42
+#define MOD_BLEEDING                    43
+#define MOD_GAS                         44
+#define MOD_KICK                        45
+//PG BUND
+#define MOD_PUNCH                       50
+#define MOD_GRAPPLE                     51
+#define MOD_FRIENDLY_FIRE               0x8000000
+
+extern int meansOfDeath;
+// zucc for hitlocation of death
+extern int locOfDeath;
+// stop an armor piercing round that hits a vest
+extern int stopAP;
+
+extern g_edict_t *g_edicts;
+
+#define FOFS(x)  (int)&(((g_edict_t *)0)->x)
+#define STOFS(x) (int)&(((spawn_temp_t *)0)->x)
+#define LLOFS(x) (int)&(((level_locals_t *)0)->x)
+#define CLOFS(x) (int)&(((gclient_t *)0)->x)
+#define random()        ((rand () & 0x7fff) / ((float)0x7fff))
+#define crandom()       (2.0 * (random() - 0.5))
+
+
+extern cvar_t *maxentities;
+extern cvar_t *deathmatch;
+extern cvar_t *coop;
+extern cvar_t *dmflags;
+extern cvar_t *needpass;
+extern cvar_t *hostname;
+extern cvar_t *teamplay;
+extern cvar_t *radiolog;
+extern cvar_t *motd_time;
+extern cvar_t *actionmaps;
+extern cvar_t *roundtimelimit;
+extern cvar_t *maxteamkills;
+extern cvar_t *tkbanrounds;
+extern cvar_t *twbanrounds;
+extern cvar_t *limchasecam;
+extern cvar_t *roundlimit;
+extern cvar_t *skipmotd;
+extern cvar_t *nohud;
+extern cvar_t *noscore;
+extern cvar_t *actionversion;
+extern cvar_t *use_voice;
+extern cvar_t *ppl_idletime;
+extern cvar_t *use_tourney;
+extern cvar_t *use_3teams;
+extern cvar_t *use_kickvote;
+extern cvar_t *mv_public;
+extern cvar_t *vk_public;
+extern cvar_t *punishkills;
+extern cvar_t *mapvote_waittime;
+extern cvar_t *ff_afterround;
+extern cvar_t *use_buggy_bandolier;
+extern cvar_t *uvtime;
+extern cvar_t *use_mapvote;     // enable map voting
+extern cvar_t *use_scramblevote;
+extern cvar_t *sv_gib;
+extern cvar_t *sv_crlf;
+extern cvar_t *vrot;
+extern cvar_t *rrot;
+extern cvar_t *strtwpn;
+extern cvar_t *llsound;
+extern cvar_t *use_cvote;
+extern cvar_t *new_irvision;
+extern cvar_t *use_rewards;
+extern cvar_t *use_warnings;
+extern cvar_t *matchmode;
+extern cvar_t *darkmatch;
+extern cvar_t *day_cycle;       // If darkmatch is on, this value is the nr of seconds between each interval (day, dusk, night, dawn)
+extern cvar_t *hearall;         // used in match mode
+extern cvar_t *mm_forceteamtalk;
+extern cvar_t *mm_adminpwd;
+extern cvar_t *mm_allowlock;
+extern cvar_t *mm_pausecount;
+extern cvar_t *mm_pausetime;
+
+extern cvar_t *teamdm;
+extern cvar_t *teamdm_respawn;
+extern cvar_t *respawn_effect;
+
+extern cvar_t *item_respawnmode;
+
+extern cvar_t *item_respawn;
+extern cvar_t *weapon_respawn;
+extern cvar_t *ammo_respawn;
+
+extern cvar_t *wave_time;
+
+//moved these to team struct -Mani
+/*extern cvar_t *team1score;
+extern cvar_t *team2score;
+extern cvar_t *team3score;*/
+
+extern cvar_t *use_punch;
+
+extern cvar_t *radio_max;
+extern cvar_t *radio_time;
+extern cvar_t *radio_ban;
+extern cvar_t *radio_repeat;
+//SLIC2
+extern cvar_t *radio_repeat_time;
+
+extern cvar_t *hc_single;
+extern cvar_t *wp_flags;
+extern cvar_t *itm_flags;
+extern cvar_t *use_classic;     // Use_classic resets weapon balance to 1.52
+extern cvar_t *skill;
+extern cvar_t *fraglimit;
+extern cvar_t *timelimit;
+extern cvar_t *capturelimit;
+extern cvar_t *password;
+extern cvar_t *g_select_empty;
+extern cvar_t *dedicated;
+
+extern cvar_t *filterban;
+extern cvar_t *flood_msgs;
+extern cvar_t *flood_persecond;
+extern cvar_t *flood_waitdelay;
+
+extern cvar_t *sv_gravity;
+extern cvar_t *sv_maxvelocity;
+
+extern cvar_t *gun_x, *gun_y, *gun_z;
+extern cvar_t *sv_rollspeed;
+extern cvar_t *sv_rollangle;
+
+extern cvar_t *run_pitch;
+extern cvar_t *run_roll;
+extern cvar_t *bob_up;
+extern cvar_t *bob_pitch;
+extern cvar_t *bob_roll;
+
+extern cvar_t *sv_cheats;
+extern cvar_t *maxclients;
+
+extern cvar_t *unique_weapons;
+extern cvar_t *unique_items;
+extern cvar_t *ir;              //toggles if bandolier works as infra-red sensor
+extern cvar_t *knifelimit;
+extern cvar_t *tgren;
+extern cvar_t *allweapon;
+extern cvar_t *allitem;
+
+extern cvar_t *stats_endmap; // If on (1), show the accuracy/etc stats at the end of a map
+extern cvar_t *stats_afterround; // TNG Stats, collect stats between rounds
+
+extern cvar_t *auto_join;       // Automaticly join clients to teams they were on in last map.
+extern cvar_t *auto_equip;      // Remember weapons and items for players between maps.
+
+// TNG:Freud - new spawning system
+extern cvar_t *use_oldspawns;
+// TNG:Freud - ghosts
+extern cvar_t *use_ghosts;
+
+// zucc from action
+extern cvar_t *sv_shelloff;
+extern cvar_t *splatlimit;
+extern cvar_t *bholelimit;
+
+#define world   (&g_edicts[0])
+// item spawnflags
+#define ITEM_TRIGGER_SPAWN              0x00000001
+#define ITEM_NO_TOUCH                   0x00000002
+// 6 bits reserved for editor flags
+// 8 bits used as power cube id bits for coop games
+#define DROPPED_ITEM                    0x00010000
+#define DROPPED_PLAYER_ITEM             0x00020000
+#define ITEM_TARGETS_USED               0x00040000
+
+/* typedef struct
+{
+  char *name;
+  int ofs;
+  fieldtype_t type;
+  int flags;
+}
+field_t;
+*/
+
+void Cmd_Help_f (g_edict_t *ent);
+void Cmd_Score_f (g_edict_t * ent);
+void Cmd_CPSI_f (g_edict_t *ent);
+void Cmd_VidRef_f (g_edict_t *ent);
+
+void PrecacheItem (g_item_t *it);
+void InitItems (void);
+void SetItemNames (void);
+g_item_t *FindItem (char *pickup_name);
+g_item_t *FindItemByClassname (char *classname);
+g_item_t *FindItemByNum (int num);
+//#define ITEM_INDEX(x) ((x)-itemlist)
+#define INV_AMMO(ent, num) ((ent)->client->persistent.inventory[items[(num)].index])
+#define GET_ITEM(num) (GetItemByIndex(items[(num)].index))
+g_edict_t *Drop_Item (g_edict_t *ent, g_item_t *item);
+void SetRespawn (g_edict_t *ent, float delay);
+void ChangeWeapon (g_edict_t *ent);
+void SpawnItem (g_edict_t *ent, g_item_t *item);
+void Think_Weapon (g_edict_t *ent);
+int ArmorIndex (g_edict_t *ent);
+int PowerArmorType (g_edict_t *ent);
+g_item_t *GetItemByIndex (int index);
+void Add_Ammo (g_edict_t *ent, g_item_t *item, int count);
+void Touch_Item (g_edict_t *ent, g_edict_t *other, c_bsp_plane_t *plane, c_bsp_surface_t *surf);
+void KillBox (g_edict_t *ent);
+void G_ProjectSource (vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result);
+//g_edict_t *G_Find (g_edict_t *from, int fieldofs, char *match);
+g_edict_t *findradius (g_edict_t *from, vec3_t org, float rad);
+g_edict_t *G_PickTarget (char *targetname);
+void G_UseTargets (g_edict_t *ent, g_edict_t *activator);
+void G_SetMovedir (vec3_t angles, vec3_t movedir);
+
+void G_InitEdict (g_edict_t *e);
+g_edict_t *G_Spawn (void);
+void G_FreeEdict (g_edict_t *e);
+
+void G_TouchTriggers (g_edict_t *ent);
+void G_TouchSolids (g_edict_t *ent);
+
+char *G_CopyString (char *in);
+
+//float *tv (float x, float y, float z);
+char *vtos (vec3_t v);
+
+float vectoyaw (vec3_t vec);
+void vectoangles (vec3_t vec, vec3_t angles);
+
+void OnSameTeam (g_edict_t *ent1, g_edict_t *ent2);
+void CanDamage (g_edict_t *targ, g_edict_t *inflictor);
+void T_Damage (g_edict_t *targ, g_edict_t *inflictor, g_edict_t *attacker,
+               vec3_t dir, vec3_t point, vec3_t normal, int damage,
+               int knockback, int dflags, int mod);
+void T_RadiusDamage (g_edict_t *inflictor, g_edict_t *attacker, float damage,
+                     g_edict_t *ignore, float radius, int mod);
+
+// damage flags
+#define DAMAGE_RADIUS                   0x00000001      // damage was indirect
+#define DAMAGE_NO_ARMOR                 0x00000002      // armour does not protect from this damage
+#define DAMAGE_ENERGY                   0x00000004      // damage is from an energy based weapon
+#define DAMAGE_NO_KNOCKBACK             0x00000008      // do not affect velocity, just view angles
+
+#define DEFAULT_BULLET_HSPREAD                  300
+#define DEFAULT_BULLET_VSPREAD                  500
+#define DEFAULT_SHOTGUN_HSPREAD                 1000
+#define DEFAULT_SHOTGUN_VSPREAD                 500
+#define DEFAULT_DEATHMATCH_SHOTGUN_COUNT        12
+#define DEFAULT_SHOTGUN_COUNT                   12
+#define DEFAULT_SSHOTGUN_COUNT                  20
+
+void ThrowHead (g_edict_t *self, char *gibname, int damage, int type);
+void ThrowClientHead (g_edict_t *self, int damage);
+void ThrowGib (g_edict_t *self, char *gibname, int damage, int type);
+void BecomeExplosion1 (g_edict_t *self);
+
+void ThrowDebris (g_edict_t *self, char *modelname, float speed,
+                  vec3_t origin);
+void fire_hit (g_edict_t *self, vec3_t aim, int damage, int kick);
+void fire_bullet (g_edict_t *self, vec3_t start, vec3_t aimdir, int damage,
+                  int kick, int hspread, int vspread, int mod);
+void fire_shotgun (g_edict_t *self, vec3_t start, vec3_t aimdir, int damage,
+                   int kick, int hspread, int vspread, int count, int mod);
+//SLIC2 changed argument name hyper to hyperb
+void fire_blaster (g_edict_t *self, vec3_t start, vec3_t aimdir, int damage,
+                   int speed, int effect);
+void fire_grenade (g_edict_t *self, vec3_t start, vec3_t aimdir, int damage,
+                   int speed, float timer, float damage_radius);
+void fire_grenade2 (g_edict_t *self, vec3_t start, vec3_t aimdir, int damage,
+                    int speed, float timer, float damage_radius);
+void fire_rocket (g_edict_t *self, vec3_t start, vec3_t dir, int damage,
+                  int speed, float damage_radius, int radius_damage);
+void fire_rail (g_edict_t *self, vec3_t start, vec3_t aimdir, int damage,
+                int kick);
+void fire_bfg (g_edict_t *self, vec3_t start, vec3_t dir, int damage,
+               int speed, float damage_radius);
+
+// zucc
+int knife_attack (g_edict_t *self, vec3_t start, vec3_t aimdir, int damage,
+                  int kick);
+void knife_throw (g_edict_t *self, vec3_t start, vec3_t dir, int damage,
+                  int speed);
+void fire_bullet_sparks (g_edict_t *self, vec3_t start, vec3_t aimdir,
+                         int damage, int kick, int hspread, int vspread,
+                         int mod);
+void fire_bullet_sniper (g_edict_t *self, vec3_t start, vec3_t aimdir,
+                         int damage, int kick, int hspread, int vspread,
+                         int mod);
+void fire_grenade3 (g_edict_t *self, vec3_t start, vec3_t aimdir, int damage,
+                    int speed);
+
+void PlayerTrail_Init (void);
+void PlayerTrail_Add (vec3_t spot);
+void PlayerTrail_New (vec3_t spot);
+g_edict_t *PlayerTrail_PickFirst (g_edict_t *self);
+g_edict_t *PlayerTrail_PickNext (g_edict_t *self);
+g_edict_t *PlayerTrail_LastSpot (void);
+
+void respawn (g_edict_t *ent);
+void BeginIntermission (g_edict_t *targ);
+void PutClientInServer (g_edict_t *ent);
+void InitClientPersistant (g_client_t *client);
+void InitClientResp (g_client_t *client);
+void InitBodyQue (void);
+void ClientBeginServerFrame (g_edict_t *ent);
+
+void player_pain (g_edict_t *self, g_edict_t *other, float kick, int damage);
+void player_die (g_edict_t *self, g_edict_t *inflictor, g_edict_t *attacker,
+                 int damage, vec3_t point);
+
+void ServerCommand (void);
+void SV_FilterPacket (char *from, int *temp);
+void Kick_Client (g_edict_t *ent);
+void Ban_TeamKiller (g_edict_t *ent, int rounds);
+
+void ClientEndServerFrame (g_edict_t *ent);
+
+void MoveClientToIntermission (g_edict_t *client);
+void G_SetStats (g_edict_t *ent);
+void G_SetSpectatorStats (g_edict_t *ent);
+void G_CheckChaseStats (g_edict_t *ent);
+void ValidateSelectedItem (g_edict_t *ent);
+void DeathmatchScoreboardMessage (g_edict_t *client, g_edict_t *killer);
+
+void PlayerNoise (g_edict_t *who, vec3_t where, int type);
+
+void M_CheckBottom (g_edict_t *ent);
+void M_walkmove (g_edict_t *ent, float yaw, float dist);
+void M_MoveToGoal (g_edict_t *ent, float dist);
+void M_ChangeYaw (g_edict_t *ent);
+void GetChaseTarget (g_edict_t *ent);
+
+//============================================================================
+
+// client_t->anim_priority
+#define ANIM_BASIC              0       // stand / run
+#define ANIM_WAVE               1
+#define ANIM_JUMP               2
+#define ANIM_PAIN               3
+#define ANIM_ATTACK             4
+#define ANIM_DEATH              5
+// in 3.20 there is #define ANIM_REVERSE 6    -FB
+// zucc vwep - based on info from Hentai
+#define ANIM_REVERSE            -1
+
+#define MAX_SKINLEN                             32
+
+
+//end action
+
+
 
 typedef enum {
 	VOTE_NO_OP, VOTE_YES, VOTE_NO
@@ -308,7 +923,7 @@ typedef enum {
 
 // gameplay modes
 typedef enum {
-	DEATHMATCH, INSTAGIB, ARENA
+	DEATHMATCH, CTF, ARENA
 } g_gameplay_t;
 
 #define TEAM_CHANGE_TIME 5.0
@@ -373,11 +988,8 @@ typedef struct {
 	short max_shells;
 	short max_bullets;
 	short max_grenades;
-	short max_rockets;
-	short max_cells;
-	short max_bolts;
-	short max_slugs;
-	short max_nukes;
+	short max_rounds;
+	short max_knives;
 
 	g_item_t *weapon;
 	g_item_t *last_weapon;
@@ -475,7 +1087,7 @@ struct g_client_s {
 
 	char *mapvote;
 	char *cvote;
-
+	
 	int mk23_mode;                // firing mode, semi or auto
 	int mp5_mode;
 	int m4_mode;
@@ -486,6 +1098,83 @@ struct g_client_s {
 	int ir;                       // ir on or off (only matters if player has ir device, currently bandolier)
 	int hs_streak; 
 	int firing_style;
+	int mk23_max;
+	int mk23_rds;
+
+	int dual_max;
+	int dual_rds;
+	int shot_max;
+	int shot_rds;
+	int sniper_max;
+	int sniper_rds;
+
+	int mp5_max;
+	int mp5_rds;
+
+	int m4_max;
+	int m4_rds;
+	int cannon_max;
+  	int cannon_rds;
+  	int knife_max;
+
+  	int grenade_max;
+  	int curr_weap;                // uses NAME_NUM values
+
+  	int fired;                    // keep track of semi auto
+  	int burst;                    // remember if player is bursting or not
+  	int fast_reload;              // for shotgun/sniper rifle
+  	int idle_weapon;              // how many frames to keep our weapon idle
+  	int desired_fov;              // what fov does the player want? (via zooming)
+	int desired_zoom;             //either 0, 1, 2, 4 or 6. This is set to 0 if no zooming shall be done, and is set to 0 after zooming is done.
+
+ 	int ctf_uvtime;               // AQ2:TNG - JBravo adding UVtime
+
+  	int unique_weapon_total;
+  	int unique_item_total;
+  	int drop_knife;
+  	int knife_sound;              // we attack several times when slashing but only want 1 sound
+
+	int takedamage;
+
+  	int no_sniper_display;
+  	int bandaging;
+  	int leg_damage;
+  	int leg_dam_count;
+  	int leg_noise;
+  	int leghits;
+  	int bleeding;                 //remaining points to bleed away
+  	int bleed_remain;
+  	int bleedloc;
+  	vec3_t bleedloc_offset;       // location of bleeding (from origin)
+  	vec3_t bleednorm;
+  	vec3_t mins;
+	vec3_t maxs;
+  	vec3_t absmin;
+	//vec3_t absmax;
+	g_edict_t *absmax;
+	vec3_t size;
+  	solid_t solid;
+  	int clipmask;
+  	g_edict_t *owner;
+  	float bleeddelay;             // how long until we bleed again
+
+	
+	int bandage_stopped;
+  	int have_laser;
+
+  	int doortoggle;               // set by player with opendoor command
+
+  	g_edict_t *attacker;            // keep track of the last person to hit us
+  	int attacker_mod;             // and how they hit us
+  	int attacker_loc;             // location of the hit
+
+  	int push_timeout;             // timeout for how long an attacker will get fall death credit
+
+  	int jumping;
+
+	int reload_attempts;
+	int weapon_attempts;
+	int chase_mode;
 
 	int stats_locations[10];      // All locational damage
 
@@ -502,12 +1191,11 @@ struct g_client_s {
 	int selected_item;
 	int inventory[MAX_ITEMS];
 
-	int max_pistol_bullets;
+	int max_bullets;
 	int max_shells;
 	int max_grenades;
-	int max_sniper_rounds;
-	int max_mp5;
-	int max_m4;
+	int max_rounds;
+	int max_knives;
 	
 	vec3_t kick_angles;
 	vec3_t kick_origin;
