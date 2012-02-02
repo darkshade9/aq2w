@@ -471,6 +471,7 @@ config.status:1065: creating src/tools/Makefile
 config.status:1065: creating src/tools/pak/Makefile
 config.status:1065: creating src/tools/q2wmap/Makefile
 config.status:1065: creating config.h
+config.status:1287: config.h is unchanged
 config.status:1339: executing depfiles commands
 config.status:1339: executing libtool commands
 configure:16023: result:

@@ -30,6 +30,7 @@ g_game_t g_game;
 g_level_t g_level;
 
 unsigned int means_of_death;
+unsigned int loc_of_death;
 
 cvar_t *g_auto_join;
 cvar_t *g_capture_limit;

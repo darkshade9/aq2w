@@ -292,6 +292,10 @@ typedef struct {
 #define MAP_LIST_WEIGHT 16384
 
 //Action Additions
+
+#define DF_SKINTEAMS            64
+#define DF_MODELTEAMS           128
+
 #define DAMAGE_TIME             0.5
 #define FALL_TIME               0.3
 #define MELEE_DISTANCE  80
@@ -555,6 +559,7 @@ movetype_t;
 
 extern int sm_meat_index;
 extern int snd_fry;
+//extern int *took_damage;
 
 //means of death
 #define MOD_MK23                        34
@@ -572,13 +577,18 @@ extern int snd_fry;
 //PG BUND
 #define MOD_PUNCH                       50
 #define MOD_GRAPPLE                     51
-#define MOD_FRIENDLY_FIRE               0x8000000
 
 extern int meansOfDeath;
 // zucc for hitlocation of death
 extern int locOfDeath;
 // stop an armor piercing round that hits a vest
-extern int stopAP;
+unsigned extern int stopAP;
+extern cvar_t *sv_gib;
+extern cvar_t *use_rewards;
+extern cvar_t *deathmatch;
+extern cvar_t *coop;
+unsigned extern int dmflags;
+extern cvar_t *ff_afterround;
 
 extern g_edict_t *g_edicts;
 
@@ -589,11 +599,20 @@ extern g_edict_t *g_edicts;
 #define random()        ((rand () & 0x7fff) / ((float)0x7fff))
 #define crandom()       (2.0 * (random() - 0.5))
 
-
+extern int team_game_going;
+extern unsigned int team_round_going;
+extern int lights_camera_action;
+extern int holding_on_tie_check;
+extern int team_round_countdown;
+extern int timewarning;
+extern int fragwarning;
+//extern transparent_list_t *transparent_list;
+//extern trace_t *trace_t_temp;
+extern int current_round_length; // For RoundTimeLeft
+extern int day_cycle_at;
+extern int teamCount;
+/*
 extern cvar_t *maxentities;
-extern cvar_t *deathmatch;
-extern cvar_t *coop;
-extern cvar_t *dmflags;
 extern cvar_t *needpass;
 extern cvar_t *hostname;
 extern cvar_t *teamplay;
@@ -619,12 +638,10 @@ extern cvar_t *mv_public;
 extern cvar_t *vk_public;
 extern cvar_t *punishkills;
 extern cvar_t *mapvote_waittime;
-extern cvar_t *ff_afterround;
 extern cvar_t *use_buggy_bandolier;
 extern cvar_t *uvtime;
 extern cvar_t *use_mapvote;     // enable map voting
 extern cvar_t *use_scramblevote;
-extern cvar_t *sv_gib;
 extern cvar_t *sv_crlf;
 extern cvar_t *vrot;
 extern cvar_t *rrot;
@@ -632,7 +649,6 @@ extern cvar_t *strtwpn;
 extern cvar_t *llsound;
 extern cvar_t *use_cvote;
 extern cvar_t *new_irvision;
-extern cvar_t *use_rewards;
 extern cvar_t *use_warnings;
 extern cvar_t *matchmode;
 extern cvar_t *darkmatch;
@@ -643,7 +659,7 @@ extern cvar_t *mm_adminpwd;
 extern cvar_t *mm_allowlock;
 extern cvar_t *mm_pausecount;
 extern cvar_t *mm_pausetime;
-
+*/
 extern cvar_t *teamdm;
 extern cvar_t *teamdm_respawn;
 extern cvar_t *respawn_effect;
@@ -975,6 +991,18 @@ typedef struct {
 	char skin[32];
 	short score;
 	short captures;
+//action
+        short stats_locations[10];      // All locational damage
+
+        int stats_shots_t;            // Total nr of shots for TNG Stats
+        int stats_shots_h;            // Total nr of hits for TNG Stats
+
+        int stats_shots[100];       // Shots fired
+        int stats_hits[100];                // Shots hit
+        int stats_headshot[100];    // Shots in head
+	int hs_streak;
+	int last_damaged_part;
+	char last_damaged_players[256];
 
 	short health;
 	short max_health;
@@ -1029,9 +1057,11 @@ struct g_client_s {
 	g_item_t *new_weapon;
 
 	int damage_armor; // damage absorbed by armor
+	int damage_parmor; // damage absorbed by armor
+	int damage_knockback; // impact damage
 	int damage_blood; // damage taken out of health
 	vec3_t damage_from; // origin for vector calculation
-
+	
 	vec3_t angles; // aiming direction
 	vec3_t old_angles;
 	vec3_t old_velocity;
@@ -1062,9 +1092,18 @@ struct g_client_s {
 	int kills;
 	int deaths;
 	int streak;	
+	
+	int damage_dealt;
+	
 	g_item_t *item;		//tp item
 	g_item_t *weapon;	//tp weapon
 	g_item_t *lastweapon;
+
+	int last_damaged_part;
+  	char last_damaged_players[256];
+
+	int stat_mode;                // Automatical Send of statistics to client
+	int stat_mode_intermission;
 
 	int team;		//tp team
 	int saved_team;
@@ -1149,10 +1188,6 @@ struct g_client_s {
   	vec3_t bleednorm;
   	vec3_t mins;
 	vec3_t maxs;
-  	vec3_t absmin;
-	//vec3_t absmax;
-	g_edict_t *absmax;
-	vec3_t size;
   	solid_t solid;
   	int clipmask;
   	g_edict_t *owner;
@@ -1175,15 +1210,6 @@ struct g_client_s {
 	int reload_attempts;
 	int weapon_attempts;
 	int chase_mode;
-
-	int stats_locations[10];      // All locational damage
-
-	int stats_shots_t;            // Total nr of shots for TNG Stats
-	int stats_shots_h;            // Total nr of hits for TNG Stats
-
-	int stats_shots[100];       // Shots fired
-	int stats_hits[100];                // Shots hit
-	int stats_headshot[100];    // Shots in head
 
 	int hand;
 	int score;	
@@ -1294,6 +1320,7 @@ struct g_edict_s {
 
 	short view_height; // height above origin where eyesight is determined
 	boolean_t take_damage;
+	boolean_t damage_dealt;
 	short dmg;
 	short knockback;
 	float dmg_radius;

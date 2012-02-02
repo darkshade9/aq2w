@@ -67,6 +67,7 @@ extern unsigned short lightning_fly_index;
 extern unsigned short quad_damage_index;
 
 extern unsigned int means_of_death;
+extern unsigned int loc_of_death;
 
 extern cvar_t *g_auto_join;
 extern cvar_t *g_capture_limit;
